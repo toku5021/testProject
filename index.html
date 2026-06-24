@@ -3,17 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>iOS キーボードテスト（記憶リセット版）</title>
+    <title>iOS Safari キーボードテスト</title>
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: #f5f5f7;
             color: #1d1d1f;
             padding: 20px;
             margin: 0;
         }
-        h1 { font-size: 18px; text-align: center; margin-bottom: 5px; }
-        .subtitle { font-size: 12px; color: #86868b; text-align: center; margin-bottom: 20px; }
+        h1 {
+            font-size: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .description {
+            font-size: 13px;
+            color: #86868b;
+            margin-bottom: 25px;
+            text-align: center;
+        }
         .card {
             background: #ffffff;
             border-radius: 12px;
@@ -21,66 +30,90 @@
             margin-bottom: 16px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
-        .card-title { font-size: 14px; font-weight: bold; margin-bottom: 4px; }
-        .card-code { font-size: 11px; color: #0071e3; font-family: monospace; margin-bottom: 8px; }
-        .card-desc { font-size: 12px; color: #515154; margin-bottom: 12px; line-height: 1.4; }
-        
-        /* スタイリング */
+        .card-title {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 4px;
+            color: #000000;
+        }
+        .card-subtitle {
+            font-size: 11px;
+            color: #0071e3;
+            font-family: monospace;
+            margin-bottom: 10px;
+        }
+        .card-desc {
+            font-size: 12px;
+            color: #515154;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
         input {
             width: 100%;
             padding: 12px;
-            font-size: 16px; /* iOS Safariの自動ズーム防止 */
+            font-size: 16px; /* iOSの自動ズームを防ぐため16px以上に設定 */
             border: 1px solid #d2d2d7;
             border-radius: 8px;
             box-sizing: border-box;
             background-color: #fbfbfd;
-            -webkit-appearance: none; /* 検索窓特有のデフォルトデザインをリセット */
+            -webkit-appearance: none;
         }
-        input:focus { outline: none; border-color: #0071e3; background-color: #ffffff; }
-
-        /* type="search" で右側に出る「×」ボタンを消したい場合は以下を有効に（お好みで） */
-        input[type="search"]::-webkit-search-decoration,
-        input[type="search"]::-webkit-search-cancel-button,
-        input[type="search"]::-webkit-search-results-button,
-        input[type="search"]::-webkit-search-results-decoration {
-            display: none;
+        input:focus {
+            outline: none;
+            border-color: #0071e3;
+            background-color: #ffffff;
         }
-
-        .btn-reset {
-            display: block;
-            width: 100%;
-            padding: 12px;
-            background: #0071e3;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: bold;
-            margin-bottom: 20px;
+        footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 11px;
+            color: #86868b;
         }
     </style>
 </head>
 <body>
 
-    <h1>iOS キーボードテスト<br>（記憶リセット版）</h1>
-    <p class="subtitle">前回の記憶（かなボード）を破れるかテストします</p>
-
-    <button class="btn-reset" onclick="location.reload()">ページを再読み込み</button>
+    <h1>iOS Safari<br>キーボード初期表示テスト</h1>
+    <p class="description">各入力欄をタップして、スマホのキーボードが「QWERTY」になるか検証してください。</p>
 
     <div class="card">
-        <div class="card-title">対策：検索属性 ＋ URLモード</div>
-        <div class="card-code">type="search" + inputmode="url"</div>
-        <p class="card-desc">iOSがテキスト入力とは別扱いにする「検索窓」属性に、英字を強く要求するURLモードを掛け合わせます。伏せ字（●）にはならず、前回のテキスト記憶を無視してQWERTYが立ち上がるか検証します。</p>
-        
-        <input type="search" id="final-input" inputmode="url" autocorrect="off" autocapitalize="none" autocomplete="off" placeholder="ここをタップ">
+        <div class="card-title">① 最も有力なQWERTY誘導 (URLモード)</div>
+        <div class="card-subtitle">inputmode="url" + 各種オフ</div>
+        <p class="card-desc">英字入力を最も強く誘発する属性です。自動修正や予測変換をオフにして日本語に引っ張られるのを防ぎます。</p>
+        <input type="text" inputmode="url" autocorrect="off" autocapitalize="none" autocomplete="off" placeholder="タップして確認">
     </div>
 
     <div class="card">
-        <div class="card-title">比較用：通常のテキスト欄</div>
-        <div class="card-code">通常の type="text"</div>
-        <p class="card-desc">制御なし。直前に使っていたキーボードが「日本語かな（テンキー）」なら、かなが開きます。</p>
+        <div class="card-title">② メールアドレス形式</div>
+        <div class="card-subtitle">type="email"</div>
+        <p class="card-desc">iOSがシステム的に英字キーボード（@付きのQWERTY）を強制する設定です。</p>
+        <input type="email" autocorrect="off" autocapitalize="none" autocomplete="off" placeholder="example@domain.com">
+    </div>
+
+    <div class="card">
+        <div class="card-title">③ パスワード形式（自動QWERTY）</div>
+        <div class="card-subtitle">type="password"</div>
+        <p class="card-desc">セキュリティ上、必ず英字QWERTYになりますが、入力文字が伏せ字（●）になります。</p>
+        <input type="password" placeholder="パスワード入力">
+    </div>
+
+    <div class="card">
+        <div class="card-title">④ 通常のテキスト＋各種オフ</div>
+        <div class="card-subtitle">type="text" + 各種オフ</div>
+        <p class="card-desc">inputmodeを指定せず、自動修正や大文字化だけをオフにしたパターンです（直前のキーボード環境に依存しやすい）。</p>
+        <input type="text" autocorrect="off" autocapitalize="none" autocomplete="off" placeholder="タップして確認">
+    </div>
+
+    <div class="card">
+        <div class="card-title">⑤ 比較用：標準のテキスト欄</div>
+        <div class="card-subtitle">type="text"（属性なし）</div>
+        <p class="card-desc">何も制御していない状態です。日本語環境であれば通常「かなキーボード（テンキー）」が表示されます。</p>
         <input type="text" placeholder="通常のテキスト欄">
     </div>
+
+    <footer>
+        <p>※iOSの仕様上、ユーザーが直前に使っていたキーボードが優先される場合があります。</p>
+    </footer>
 
 </body>
 </html>
