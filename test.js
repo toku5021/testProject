@@ -1,41 +1,50 @@
 /**
- * 機能名  ：メールアドレス入力欄 QWERTYキーボード強制起動機能（Vanilla JS版）
- * 機能概要 ：property='iemail' を持つ要素の初回フォーカス時に一瞬 password 化し、
- *       直前のかな入力の記憶を上書きして英語配列キーボードを強制します。
+ * 機能名  ：メールアドレス入力欄 QWERTY（email版）強制起動機能
+ * 機能概要 ：property='iemail' を持つ要素のタップ（クリック）時に、
+ * 一瞬だけ異なるtypeを高速で切り替えることにより、
+ * 直前のかな入力の記憶を完全にクリアして「メール用のQWERTY」を強制します。
  */
 document.addEventListener('DOMContentLoaded', function() {
     
-    // ページ全体のフォーカスイベントをキャッチ（イベントデリゲーション）
-    document.addEventListener('focus', function(event) {
-        var target = event.target;
+    // タップ・クリックされた瞬間（フォーカスが当たる直前）をキャッチ
+    // スマホ対応のため touchstart、PCでの検証用に mousedown を両方セット
+    var triggerEvents = ['touchstart', 'mousedown'];
 
-        // フォーカスされた要素が input かつ property='iemail' 属性を持っているかチェック
-        if (!target || target.tagName !== 'INPUT' || target.getAttribute('property') !== 'iemail') {
-            return;
-        }
+    triggerEvents.forEach(function(eventType) {
+        document.addEventListener(eventType, function(event) {
+            var target = event.target;
 
-        // すでに文字が入力されている場合は、ユーザーが編集中のためハックを行わない
-        if (target.value && target.value.length > 0) {
-            return;
-        }
+            // 対象の入力欄かつ、property='iemail' を持っているかチェック
+            if (!target || target.tagName !== 'INPUT' || target.getAttribute('property') !== 'iemail') {
+                return;
+            }
 
-        // 属性変更時のイベント無限ループ（チャタリング）を防止
-        if (target.getAttribute('data-switching') === 'true') {
-            return;
-        }
-        target.setAttribute('data-switching', 'true');
+            // すでに文字が入っている、または処理中の場合はスキップ
+            if ((target.value && target.value.length > 0) || target.getAttribute('data-switching') === 'true') {
+                return;
+            }
 
-        // 一瞬だけ password にしてOSにQWERTYキーボードを強制起動させる
-        target.type = 'password';
+            target.setAttribute('data-switching', 'true');
 
-        // タイマーで即座に email タイプへ戻す
-        setTimeout(function() {
-            // 正規の email に戻す（失敗してもベースが email なので安全）
-            target.type = 'email';
-            target.setAttribute('data-switching', 'false');
+            // --- 【ここが最重要トリック】 ---
+            // スマホのキーボードエンジンに「完全に新しい未知の入力形式が来た」と錯覚させるため、
+            // フォーカスが当たる前に、最も強制力の強い『password』と『number』を経由させます。
+            // これにより、ブラウザが保持している「直前のかな入力」のキャッシュが内部で強制パージされます。
+            target.type = 'password';
+            target.inputmode = 'numeric';
 
-            // type変更によって一部ブラウザでフォーカスが外れる現象への対策
-            target.focus();
-        }, 10);
-    }, true); // キャプチャリングフェーズでイベントを確実に補足
+            // 10ミリ秒（ブラウザが画面を描画する前の極小時間）だけ待つ
+            setTimeout(function() {
+                // 本命の『email』用のキーボード設定に書き戻す
+                target.type = 'email';
+                target.inputmode = 'email';
+
+                // 完全にリフレッシュされた状態でフォーカスを当て、email用のQWERTYを呼び出す
+                target.focus();
+
+                // 最後に処理完了フラグを戻す
+                target.setAttribute('data-switching', 'false');
+            }, 10);
+        }, true);
+    });
 });
