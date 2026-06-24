@@ -1,87 +1,166 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>iOS キーボード制御（構造完全再現版）</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: #f5f5f7;
-            padding: 20px;
-            color: #1d1d1f;
-        }
-        .caption01 { font-size: 16px; font-weight: bold; margin-bottom: 15px; }
-        .Box1 {
-            background: #ffffff;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 16px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        .caption02 { font-size: 14px; font-weight: bold; margin: 0 0 10px 0; }
-        .radio-line { display: flex; align-items: center; margin-bottom: 10px; }
-        .radio-line input { width: auto; margin-right: 8px; }
-        .radio-line label { font-size: 14px; font-weight: bold; cursor: pointer; }
-        
-        /* 本番(aaa.txt)のスタイル構造を再現 */
-        .text05 { font-size: 12px; color: #86868b; margin: 0 0 5px 0; }
-        .text06 input {
-            width: 100%;
-            padding: 12px;
-            font-size: 16px;
-            border: 1px solid #d2d2d7;
-            border-radius: 8px;
-            box-sizing: border-box;
-            background-color: #fbfbfd;
-            -webkit-appearance: none;
-        }
-        .text06 input:focus { outline: none; border-color: #0071e3; background-color: #ffffff; }
-    </style>
-    <script src="https://code.jquery.com/jquery-1.8.3.min.js"></script>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<title>本番環境完全再現テスト</title>
+	
+	<style>
+		body {
+			font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+			background-color: #f5f5f7;
+			padding: 20px;
+			color: #1d1d1f;
+		}
+		.s_title { font-size: 16px; border-bottom: 2px solid #0071e3; padding-bottom: 5px; }
+		.Box1 { background: #ffffff; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+		.caption02 { font-size: 14px; font-weight: bold; margin: 10px 0; }
+		.space05 { margin-top: 10px; }
+		.text05 { font-size: 12px; color: #86868b; margin: 0 0 5px 0; }
+		.text06 input {
+			width: 100%;
+			padding: 12px;
+			font-size: 16px; /* iOS Safariの自動ズーム防止 */
+			border: 1px solid #d2d2d7;
+			border-radius: 8px;
+			box-sizing: border-box;
+			background-color: #fbfbfd;
+			-webkit-appearance: none;
+		}
+		/* バルーンエラー用表示スタイル (1.txtより) */
+		.baloonBox { display: none; position: absolute; z-index: 10000; }
+		.baloon.red { background: #ff3b30; color: white; padding: 10px; border-radius: 8px; }
+	</style>
+
+	<script src="https://code.jquery.com/jquery-1.8.3.min.js"></script>
 </head>
 <body>
 
-    <h2 class="caption01">登録内容入力</h2>
-    
-    <div class="Box1">
-        <p class="caption02">変更・削除</p>
-        
-        <div class="radio-line">
-            <input type="radio" name="house1" id="caption00" value="1">
-            <label for="caption00">メールアドレス1の変更</label>
-        </div>
+	<form method="POST" action="" name="MainForm" onSubmit="return false;" autocomplete="off" novalidate>
+		<input type="hidden" name="_PAGEID" value="JAAC00013">
+		<input type="hidden" id="diffMail2" value="&lowast;&lowast;bt&lowast;&lowast;t0&lowast;&lowast;@test.net">
+		<input type="hidden" name="isEntryMail2" value="true">
 
-        <div id="list00" class="Box1" style="display:none; border:1px solid #d2d2d7; margin-top:10px;">
-            <p class="caption02">新しいメールアドレス1</p>
-            <div id="mail1BgEmArea" class="space01">
-                <div id="mail1_1EmArea" class="space05">
-                    <p class="text05">&lt;半角英数&gt;</p>
-                    <p class="text06">
-                        <input id="email1_1" type="text" maxlength="60"
-                               name="INEWEMAIL1" class="formText1"
-                               value="" inputmode="email"
-                               autocorrect="off" autocapitalize="none" autocomplete="off"
-                               placeholder="入力例: username@jaccs.co.jp">
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
+		<h1 class="s_title">インターコムクラブ登録内容(メールアドレス)</h1>
+		
+		<div class="chbx03">
+			<div class="space02">
+				<div class="Box1 mt10">
+					<p class="caption02">変更・削除</p>
+					
+					<div class="space05 chbxTextLine">
+						<p class="radioList2">
+							<input type="radio" name="house1" id="caption00" value="1" class="formRadio1">
+							<label for="caption00" class="formRadioLabel1">メールアドレス1の変更</label>
+						</p>
+						
+						<div id="list00" class="Box1" style="display:none;">
+							<p class="caption02">新しいメールアドレス1</p>
+							<div id="mail1BgEmArea" class="txta01 space01">
+								<div id="mail1_1EmArea" class="space05">
+									<p class="text05">&lt;半角英数&gt;</p>
+									<p class="text06">
+										<input id="email1_1" type="text" maxlength="60" name="INEWEMAIL1" class="formText1" inputmode="email" placeholder="入力例: username@jaccs.co.jp">
+									</p>
+								</div>
+								<div id="mail1_2EmArea" class="space05">
+									<p class="orangeBold" style="font-size:12px; color:orange;">確認のためもう一度同じメールアドレスを入力してください。</p>
+									<p class="text06">
+										<input id="email1_2" type="text" maxlength="60" name="INEWEMAIL1CONFIRM" class="formText1" inputmode="email" placeholder="入力例: username@jaccs.co.jp">
+									</p>
+								</div>
+							</div>
+						</div>
+						
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<div id="baloonBox" class="baloonBox"><div class="baloon red"><p>入力内容をご確認ください</p></div></div>
+	</form>
 
-    <script>
-        jQuery(function($){
-            /**
-             * 本番の 2.txt (1384行目) のエリア開閉機能を完全再現
-             * ラジオボタンが押されたら、スライドアニメーションで入力欄を「動的出現」させる
-             */
-            $("#caption00").on("click", function() {
-                if($('#list00').css('display') != 'block'){
-                    $("#list00").slideToggle("fast");
-                }
-            });
-        });
-    </script>
+	<script>
+		jQuery(function($){
+			var pageId = $( 'input[name="_PAGEID"]' ).val();
+			
+			// ラジオボタン(#caption00)クリックによるエリア開閉
+			$("#caption00").on("click", function() {
+				if($('#list00').css('display') != 'block'){
+					$("#list00").slideToggle("fast");
+				}
+			});
+		});
+	</script>
+
+	<script>
+		var jaac00013_04Validation = function(){};
+		jaac00013_04Validation.Fn = {
+			initialize : function() {
+				// 入力時(keyup)イベントハンドラ設定
+				$("#email1_1").keyup(jaac00013_04Validation.Events.inputMail1_1);
+				$("#email1_2").keyup(jaac00013_04Validation.Events.inputMail1_2);
+				// フォーカスアウト時(blur)イベントハンドラ設定
+				$("#email1_1").blur(jaac00013_04Validation.Events.inputMail1_1);
+				$("#email1_2").blur(jaac00013_04Validation.Events.inputMail1_2);
+				
+				// 【今回追加】「最初にカーソルを合わせた瞬間」の再現性を100%にするためfocus時にもバインド
+				$("#email1_1").focus(jaac00013_04Validation.Events.inputMail1_1);
+			}
+		};
+		jaac00013_04Validation.Events = {
+			inputMail1_1 : function(){
+				CommonValidation.MailAdressCheck( jaac00013_04Validation.ValidationOption.MAIL_ADRESS_1_1, true );
+				CommonValidation.IsNotSameValue( jaac00013_04Validation.ValidationOption.DIFF_MAIL_ADRESS_1, false, false, true );
+				CommonValidation.IsSameValue( jaac00013_04Validation.ValidationOption.SAME_MAIL_ADRESS_1, false, false, true );
+			},
+			inputMail1_2 : function(){
+				CommonValidation.MailAdressCheck( jaac00013_04Validation.ValidationOption.MAIL_ADRESS_1_2, true );
+				CommonValidation.IsSameValue( jaac00013_04Validation.ValidationOption.SAME_MAIL_ADRESS_1, false, false, true );
+			}
+		};
+		jaac00013_04Validation.ValidationOption = {
+			MAIL_ADRESS_1_1 : { targetId: "email1_1", label: new Array("新しいメールアドレス1"), emArea: "mail1_1EmArea", bgEmArea: "mail1BgEmArea", emIdTei: "CMNE00000_CE64" },
+			MAIL_ADRESS_1_2 : { targetId: "email1_2", label: new Array("新しいメールアドレス1（確認用）"), emArea: "mail1_2EmArea", bgEmArea: "mail1BgEmArea", emIdTei: "CMNE00000_CE64" },
+			DIFF_MAIL_ADRESS_1 : { targetId1: "diffMail1", targetId2: "email1_1", label: new Array(""), emArea1: "mail1_1EmArea", emArea2: "mail1_1EmArea", bgEmArea1: "mail1BgEmArea", bgEmArea2: "mail1BgEmArea", emIdSame: "JAAC00013_CE05" },
+			SAME_MAIL_ADRESS_1 : { targetId1: "email1_1", targetId2: "email1_2", label: new Array("新しいメールアドレス1", "新しいメールアドレス1（確認用）"), emArea1: "mail1_1EmArea", emArea2: "mail1_2EmArea", bgEmArea1: "mail1BgEmArea", bgEmArea2: "mail1BgEmArea", emIdSame: "CMNE00000_CE21" }
+		};
+		jQuery(function($){ jaac00013_04Validation.Fn.initialize(); });
+	</script>
+
+	<script>
+		var CommonValidation = function() {};
+		CommonValidation.isVisible = function() { return true; }; // 簡易化
+		CommonValidation.checkExistParam = function() { return true; };
+		CommonValidation.checkExistElem = function() { return true; };
+		
+		// 4.txt: 1644行目～ メールアドレス入力チェックの再現
+		CommonValidation.MailAdressCheck = function( option, isInput ){
+			var val = $("#" + option.targetId).val();
+			// 4.txt: 1648行目エラーメッセージ削除処理の完全再現
+			if( $('#CMNE00000_CE18_email1').length != 0 ){
+				$("#dummy-error").remove(); // 本番のBhBase.Formのクリア処理をシミュレート
+			}
+			return true;
+		};
+		// 4.txt: 1655行目～ 同一チェックの再現
+		CommonValidation.IsSameValue = function( option, er_1, er_2, isInput ){
+			var msgId_1 = option.emIdSame + "_" + option.targetId1;
+			if( isInput ){
+				// 本番のメッセージ削除処理
+				$("#" + msgId_1).remove();
+			}
+			return true;
+		};
+		// 4.txt: 1662行目～ 不一致チェックの再現
+		CommonValidation.IsNotSameValue = function( option, er_1, er_2, isInput ){
+			var msgId_1 = option.emIdSame + option.targetId1;
+			if( isInput ){
+				$("#" + msgId_1).remove();
+			}
+			return true;
+		};
+	</script>
 
 </body>
 </html>
