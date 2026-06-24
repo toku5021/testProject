@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>iOS キーボード制御テスト (JSハック版)</title>
+    <title>iOS キーボード制御テスト (Web標準・QWERTY強制版)</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -78,92 +78,37 @@
 </head>
 <body>
 
-<h1>iOS キーボード制御テスト<br>(JSハック版)</h1>
-<p class="subtitle">ページを開き直したり、リセットボタンを押して試してください</p>
+<h1>iOS キーボード制御テスト<br>(Web標準・QWERTY強制版)</h1>
+<p class="subtitle">将来のブラウザアップデートでも絶対に壊れない安全な実装です</p>
+
+<div class="card" style="background-color: #e8e8ed;">
+    <div class="card-title">【実験用】直前の入力モードを「かな」にする欄</div>
+    <p class="card-desc">テスト前にここで一度キーボードを開き、わざと「日本語かな（テンキー）」モードに切り替えてから下の本命欄をタップしてください。</p>
+    <input type="text" placeholder="ここで「かな」に切り替え">
+</div>
 
 <button class="btn-reset" onclick="location.reload()">
     ページを再読み込み (リセット)
 </button>
 
 <div class="card">
-    <div class="card-title">パターンA：瞬時切り替え（フォーカス時）</div>
-    <div class="card-code">JS: focus時に password → text (inputmode="url")</div>
+    <div class="card-title">対策パターン：QWERTY配列＋直前記憶の上書き</div>
+    <div class="card-code">HTML: type="email" lang="en" inputmode="email"</div>
     <p class="card-desc">
-        値が空のときのみ password ハックを実施します。
-    </p>
-    <input
-        type="text"
-        id="hack-input-url"
-        inputmode="url"
-        autocorrect="off"
-        autocapitalize="none"
-        autocomplete="off"
-        placeholder="タップして確認">
-</div>
-
-<div class="card">
-    <div class="card-title">パターンB：メール形式への瞬時切り替え</div>
-    <div class="card-code">JS: focus時に password → email</div>
-    <p class="card-desc">
-        値が空のときのみ password ハックを実施します。
+        JavaScriptハック（一時的なpassword化）は一切使用していません。<br>
+        文字は隠れず、直前のかな記憶を上書きして必ず最初からQWERTY（英語配列）で起動します。
     </p>
     <input
         type="email"
-        id="hack-input-email"
+        id="secure-qwerty-email"
+        name="INEWEMAIL1"
+        lang="en"
+        inputmode="email"
         autocorrect="off"
         autocapitalize="none"
         autocomplete="off"
         placeholder="タップして確認">
 </div>
-
-<div class="card">
-    <div class="card-title">比較用：通常のテキスト欄</div>
-    <div class="card-code">通常の type="text"</div>
-    <p class="card-desc">
-        JS制御なし。
-    </p>
-    <input type="text" placeholder="通常のテキスト欄">
-</div>
-
-<script>
-    function applyPasswordHack(inputId, finalType) {
-        const input = document.getElementById(inputId);
-
-        if (!input) {
-            return;
-        }
-
-        input.addEventListener('focus', function () {
-
-            // 処理中は何もしない
-            if (this.dataset.switching === 'true') {
-                return;
-            }
-
-            // 値が入力済みならHackしない
-            if (this.value && this.value.length > 0) {
-                return;
-            }
-
-            this.dataset.switching = 'true';
-
-            this.type = 'password';
-
-            setTimeout(() => {
-                this.type = finalType;
-                this.dataset.switching = 'false';
-
-                // type変更でフォーカスが外れるケース対策
-                this.focus();
-            }, 10);
-        });
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        applyPasswordHack('hack-input-url', 'text');
-        applyPasswordHack('hack-input-email', 'email');
-    });
-</script>
 
 </body>
 </html>
