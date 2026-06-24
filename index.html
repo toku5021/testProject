@@ -12,8 +12,17 @@
             padding: 20px;
             margin: 0;
         }
-        h1 { font-size: 18px; text-align: center; margin-bottom: 5px; }
-        .subtitle { font-size: 12px; color: #86868b; text-align: center; margin-bottom: 20px; }
+        h1 {
+            font-size: 18px;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        .subtitle {
+            font-size: 12px;
+            color: #86868b;
+            text-align: center;
+            margin-bottom: 20px;
+        }
         .card {
             background: #ffffff;
             border-radius: 12px;
@@ -21,20 +30,38 @@
             margin-bottom: 16px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
-        .card-title { font-size: 14px; font-weight: bold; margin-bottom: 4px; }
-        .card-code { font-size: 11px; color: #0071e3; font-family: monospace; margin-bottom: 8px; }
-        .card-desc { font-size: 12px; color: #515154; margin-bottom: 12px; line-height: 1.4; }
+        .card-title {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        .card-code {
+            font-size: 11px;
+            color: #0071e3;
+            font-family: monospace;
+            margin-bottom: 8px;
+        }
+        .card-desc {
+            font-size: 12px;
+            color: #515154;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
         input {
             width: 100%;
             padding: 12px;
-            font-size: 16px; /* iOSのズーム防止 */
+            font-size: 16px;
             border: 1px solid #d2d2d7;
             border-radius: 8px;
             box-sizing: border-box;
             background-color: #fbfbfd;
             -webkit-appearance: none;
         }
-        input:focus { outline: none; border-color: #0071e3; background-color: #ffffff; }
+        input:focus {
+            outline: none;
+            border-color: #0071e3;
+            background-color: #ffffff;
+        }
         .btn-reset {
             display: block;
             width: 100%;
@@ -51,63 +78,92 @@
 </head>
 <body>
 
-    <h1>iOS キーボード制御テスト<br>(JSハック版)</h1>
-    <p class="subtitle">ページを開き直したり、リセットボタンを押して試してください</p>
+<h1>iOS キーボード制御テスト<br>(JSハック版)</h1>
+<p class="subtitle">ページを開き直したり、リセットボタンを押して試してください</p>
 
-    <button class="btn-reset" onclick="location.reload()">ページを再読み込み (リセット)</button>
+<button class="btn-reset" onclick="location.reload()">
+    ページを再読み込み (リセット)
+</button>
 
-    <div class="card">
-        <div class="card-title">パターンA：瞬時切り替え（フォーカス時）</div>
-        <div class="card-code">JS: focus時に password ➔ text (inputmode="url")</div>
-        <p class="card-desc">タップされた瞬間に一瞬だけpasswordにしてQWERTYを呼び出し、ミリ秒単位でtextに戻す技です。</p>
-        <input type="text" id="hack-input-url" inputmode="url" autocorrect="off" autocapitalize="none" autocomplete="off" placeholder="タップして確認">
-    </div>
+<div class="card">
+    <div class="card-title">パターンA：瞬時切り替え（フォーカス時）</div>
+    <div class="card-code">JS: focus時に password → text (inputmode="url")</div>
+    <p class="card-desc">
+        値が空のときのみ password ハックを実施します。
+    </p>
+    <input
+        type="text"
+        id="hack-input-url"
+        inputmode="url"
+        autocorrect="off"
+        autocapitalize="none"
+        autocomplete="off"
+        placeholder="タップして確認">
+</div>
 
-    <div class="card">
-        <div class="card-title">パターンB：メール形式への瞬時切り替え</div>
-        <div class="card-code">JS: focus時に password ➔ email</div>
-        <p class="card-desc">上記と同様の手法で、最終的にemailモードに着地させます。@マークがあるQWERTYを狙います。</p>
-        <input type="email" id="hack-input-email" autocorrect="off" autocapitalize="none" autocomplete="off" placeholder="タップして確認">
-    </div>
+<div class="card">
+    <div class="card-title">パターンB：メール形式への瞬時切り替え</div>
+    <div class="card-code">JS: focus時に password → email</div>
+    <p class="card-desc">
+        値が空のときのみ password ハックを実施します。
+    </p>
+    <input
+        type="email"
+        id="hack-input-email"
+        autocorrect="off"
+        autocapitalize="none"
+        autocomplete="off"
+        placeholder="タップして確認">
+</div>
 
-    <div class="card">
-        <div class="card-title">比較用：通常のテキスト欄</div>
-        <div class="card-code">通常の type="text"</div>
-        <p class="card-desc">JS制御なし。直前のキーボードが「かな（テンキー）」なら、かなが開きます。</p>
-        <input type="text" placeholder="通常のテキスト欄">
-    </div>
+<div class="card">
+    <div class="card-title">比較用：通常のテキスト欄</div>
+    <div class="card-code">通常の type="text"</div>
+    <p class="card-desc">
+        JS制御なし。
+    </p>
+    <input type="text" placeholder="通常のテキスト欄">
+</div>
 
-    <script>
-        // パターンAとBに対して、フォーカス時の一瞬の password 切り替えを仕込む
-        function applyPasswordHack(inputId, finalType) {
-            const input = document.getElementById(inputId);
-            if (!input) return;
+<script>
+    function applyPasswordHack(inputId, finalType) {
+        const input = document.getElementById(inputId);
 
-            input.addEventListener('focus', function() {
-                // すでに処理中の場合はスキップ
-                if (this.dataset.switching === 'true') return;
-                this.dataset.switching = 'true';
-
-                // 1. 一瞬 password にしてQWERTYを強制起動させる
-                this.type = 'password';
-
-                // 2. 非常に短い時間（10ミリ秒後）に本来のタイプに戻す
-                setTimeout(() => {
-                    this.type = finalType;
-                    this.dataset.switching = 'false';
-                    
-                    // タイプ変更でフォーカスが外れることがあるため、念のため再フォーカス
-                    this.focus(); 
-                }, 10);
-            });
+        if (!input) {
+            return;
         }
 
-        // ページ読み込み時にハックを適用
-        document.addEventListener('DOMContentLoaded', () => {
-            applyPasswordHack('hack-input-url', 'text');
-            applyPasswordHack('hack-input-email', 'email');
+        input.addEventListener('focus', function () {
+
+            // 処理中は何もしない
+            if (this.dataset.switching === 'true') {
+                return;
+            }
+
+            // 値が入力済みならHackしない
+            if (this.value && this.value.length > 0) {
+                return;
+            }
+
+            this.dataset.switching = 'true';
+
+            this.type = 'password';
+
+            setTimeout(() => {
+                this.type = finalType;
+                this.dataset.switching = 'false';
+
+                // type変更でフォーカスが外れるケース対策
+                this.focus();
+            }, 10);
         });
-    </script>
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        applyPasswordHack('hack-input-url', 'text');
+        applyPasswordHack('hack-input-email', 'email');
+    });
+</script>
 
 </body>
 </html>
