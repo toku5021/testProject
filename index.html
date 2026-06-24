@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>iOS キーボードテスト（高確率QWERTY版）</title>
+    <title>iOS キーボードテスト（記憶リセット版）</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -24,6 +24,8 @@
         .card-title { font-size: 14px; font-weight: bold; margin-bottom: 4px; }
         .card-code { font-size: 11px; color: #0071e3; font-family: monospace; margin-bottom: 8px; }
         .card-desc { font-size: 12px; color: #515154; margin-bottom: 12px; line-height: 1.4; }
+        
+        /* スタイリング */
         input {
             width: 100%;
             padding: 12px;
@@ -32,9 +34,17 @@
             border-radius: 8px;
             box-sizing: border-box;
             background-color: #fbfbfd;
-            -webkit-appearance: none;
+            -webkit-appearance: none; /* 検索窓特有のデフォルトデザインをリセット */
         }
         input:focus { outline: none; border-color: #0071e3; background-color: #ffffff; }
+
+        /* type="search" で右側に出る「×」ボタンを消したい場合は以下を有効に（お好みで） */
+        input[type="search"]::-webkit-search-decoration,
+        input[type="search"]::-webkit-search-cancel-button,
+        input[type="search"]::-webkit-search-results-button,
+        input[type="search"]::-webkit-search-results-decoration {
+            display: none;
+        }
 
         .btn-reset {
             display: block;
@@ -52,17 +62,17 @@
 </head>
 <body>
 
-    <h1>iOS キーボードテスト<br>（高確率QWERTY版）</h1>
-    <p class="subtitle">ページを開き直したり、リセットボタンを押して試してください</p>
+    <h1>iOS キーボードテスト<br>（記憶リセット版）</h1>
+    <p class="subtitle">前回の記憶（かなボード）を破れるかテストします</p>
 
     <button class="btn-reset" onclick="location.reload()">ページを再読み込み</button>
 
     <div class="card">
-        <div class="card-title">対策：メール属性 ＋ 不要文字の制限</div>
-        <div class="card-code">inputmode="email" + JS文字置換</div>
-        <p class="card-desc">iOSに「メールアドレスの入力だ」と信じ込ませて確実にQWERTY（英字）を開かせます。フォーカス移動を行わないためiOSに弾かれません。メール用の不要な記号（@など）が万が一入力された場合は、JSがその場で瞬時に消去します。</p>
+        <div class="card-title">対策：検索属性 ＋ URLモード</div>
+        <div class="card-code">type="search" + inputmode="url"</div>
+        <p class="card-desc">iOSがテキスト入力とは別扱いにする「検索窓」属性に、英字を強く要求するURLモードを掛け合わせます。伏せ字（●）にはならず、前回のテキスト記憶を無視してQWERTYが立ち上がるか検証します。</p>
         
-        <input type="text" id="qwerty-input" inputmode="email" autocorrect="off" autocapitalize="none" autocomplete="off" placeholder="ここをタップ">
+        <input type="search" id="final-input" inputmode="url" autocorrect="off" autocapitalize="none" autocomplete="off" placeholder="ここをタップ">
     </div>
 
     <div class="card">
@@ -71,25 +81,6 @@
         <p class="card-desc">制御なし。直前に使っていたキーボードが「日本語かな（テンキー）」なら、かなが開きます。</p>
         <input type="text" placeholder="通常のテキスト欄">
     </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const qwertyInput = document.getElementById('qwerty-input');
-
-            if (qwertyInput) {
-                // 入力された文字をリアルタイムに監視
-                qwertyInput.addEventListener('input', function() {
-                    // もし「純粋な英数字や特定の文字」以外を入力させたくない場合、ここで不要な文字を弾きます
-                    // 例：半角英数字（大文字小文字）と数字のみを許可し、メール用の「@」や「.」などを自動消去する場合
-                    const sanitized = this.value.replace(/[^A-Za-z0-9]/g, '');
-                    
-                    if (this.value !== sanitized) {
-                        this.value = sanitized;
-                    }
-                });
-            }
-        });
-    </script>
 
 </body>
 </html>
