@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>iOS キーボード制御テスト (Web標準・QWERTY強制版)</title>
+    <title>iOS キーボード制御テスト (CSS完全強制版)</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -74,11 +74,21 @@
             font-weight: bold;
             margin-bottom: 20px;
         }
+
+        /* 【ここが重要】
+          IME（日本語入力）をブラウザ側で物理的に無効化するクラス。
+          直前の記憶が「かな」であっても、日本語入力を立ち上げさせないことで
+          確実にQWERTYフルキーボードを強制的に引き出します。
+        */
+        .force-qwerty {
+            ime-mode: disabled !important;
+            -webkit-ime-mode: disabled !important;
+        }
     </style>
 </head>
 <body>
 
-<h1>iOS キーボード制御テスト<br>(Web標準・QWERTY強制版)</h1>
+<h1>iOS キーボード制御テスト<br>(CSS完全強制版)</h1>
 <p class="subtitle">将来のブラウザアップデートでも絶対に壊れない安全な実装です</p>
 
 <div class="card" style="background-color: #e8e8ed;">
@@ -92,18 +102,17 @@
 </button>
 
 <div class="card">
-    <div class="card-title">対策パターン：QWERTY配列＋直前記憶の上書き</div>
-    <div class="card-code">HTML: type="email" lang="en" inputmode="email"</div>
+    <div class="card-title">対策パターン：CSSによる日本語入力の完全禁止</div>
+    <div class="card-code">HTML: type="email" class="force-qwerty"</div>
     <p class="card-desc">
         JavaScriptハック（一時的なpassword化）は一切使用していません。<br>
-        文字は隠れず、直前のかな記憶を上書きして必ず最初からQWERTY（英語配列）で起動します。
+        文字は隠れず、直前のかな記憶を完全にシャットアウトして最初からQWERTY（英語配列）で起動します。
     </p>
     <input
         type="email"
         id="secure-qwerty-email"
         name="INEWEMAIL1"
-        lang="en"
-        inputmode="email"
+        class="force-qwerty"
         autocorrect="off"
         autocapitalize="none"
         autocomplete="off"
