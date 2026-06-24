@@ -3,12 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>キーボード強制リセットテスト</title>
+    <title>キーボードリセットテスト（安定版）</title>
+    <style>
+        /* ダミー用の隠し入力欄（画面外に飛ばして完全に見えなくする） */
+        .dummy-hidden {
+            position: absolute;
+            left: -9999px;
+            top: -9999px;
+            opacity: 0;
+            width: 1px;
+            height: 1px;
+        }
+    </style>
 </head>
 <body>
 
     <form method="POST" action="">
-        <label for="email_target">メールアドレス入力：</label>
+        <input type="text" id="keyboard_dummy" class="dummy-hidden" tabIndex="-1">
+
+        <label for="email_target">メールアドレス２入力：</label>
         <input 
             type="email" 
             id="email_target" 
@@ -21,17 +34,22 @@
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             var emailInput = document.getElementById("email_target");
+            var dummyInput = document.getElementById("keyboard_dummy");
 
-            // タップ（あるいはフォーカス）された瞬間にブラウザのキーボードエンジンを強制リセットする処理
-            emailInput.addEventListener("touchstart", function() {
-                // 一瞬だけ入力を無効化（readOnly）にしてフォーカスを当てることで、
-                // ブラウザに「直前のキーボード状態」を完全に破棄させ、ゼロから再走査させる
-                emailInput.readOnly = true;
-                emailInput.focus();
+            // ユーザーがタップした瞬間に実行
+            emailInput.addEventListener("touchstart", function(e) {
+                // すでにフォーカスが当たっている場合はリセット処理をスキップ（入力中の邪魔をしない）
+                if (document.activeElement === emailInput) {
+                    return;
+                }
 
+                // 一時的にダミー欄にフォーカスを奪い、直前のキーボードを破棄させる
+                dummyInput.focus();
+
+                // わずか10ミリ秒（ブラウザの1フレーム未満）の遅延で本命の入力欄にフォーカスを戻す
                 setTimeout(function() {
-                    emailInput.readOnly = false;
-                }, 50); // わずかな遅延の後に編集可能に戻す
+                    emailInput.focus();
+                }, 10);
             });
         });
     </script>
