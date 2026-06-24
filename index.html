@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>スマホキーボード挙動テスト</title>
+    <title>スマホキーボード挙動テスト（完全版）</title>
     <style>
         body {
             font-family: sans-serif;
@@ -26,7 +26,7 @@
         input {
             width: 100%;
             padding: 10px;
-            font-size: 16px; /* iOSの自動ズーム防止のため16px以上を推奨 */
+            font-size: 16px; /* iOSのズーム防止 */
             border: 1px solid #ccc;
             border-radius: 4px;
             box-sizing: border-box;
@@ -37,29 +37,45 @@
             margin-top: 5px;
             margin-bottom: 0;
         }
+        .note {
+            background-color: #e3f2fd;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
 
-    <h1>キーボード入力モード 検証ページ</h1>
-    <p style="margin-bottom: 20px; font-size: 14px;">各入力エリアをタップして、スマホの初期キーボードが「半角英数」になるか、「日本語（かな）」のままかを確認してください。</p>
+    <h1>キーボード入力モード 検証ページ（完全版）</h1>
+    <div class="note">
+        <p><strong>【実験のやり方】</strong></p>
+        一度キーボードを手動で「日本語（かな）」モードに切り替えてから、それぞれの入力欄をタップして挙動の違いを比較してください。
+    </div>
 
     <div class="test-box">
         <label for="pattern1">1. type="text" ＋ プレースホルダあり</label>
         <input type="text" id="pattern1" placeholder="入力例: username@jaccs.co.jp">
-        <p>※元々のコードのパターンです。placeholderの文字列をブラウザが解析して気を利かせるか検証します。</p>
+        <p>※元のコードの再現です。プレースホルダの文字列だけをブラウザが解析して気を利かせるか検証します。</p>
     </div>
 
     <div class="test-box">
         <label for="pattern2">2. inputmode="email" のみ指定（type="text"）</label>
         <input type="text" id="pattern2" inputmode="email">
-        <p>※プレースホルダは無し。キーボードの配列（@マークの有無）は変わるが、英語モードに強制されるか検証します。</p>
+        <p>※キーボードの配列（@マークの有無）は変わりますが、英語モードに強制されるか（前回の全角かなを引きずらないか）を検証します。</p>
     </div>
 
     <div class="test-box">
-        <label for="pattern3">3. type="email" ＋ inputmode="email"（最強セット）</label>
+        <label for="pattern3">3. type="email" ＋ inputmode="email"</label>
         <input type="email" id="pattern3" inputmode="email">
-        <p>※プレースホルダは無し。データの意味とキーボードの両方を指定。iOSが最も確実に「半角英数」で立ち上げるか検証します。</p>
+        <p>※データの意味とキーボード配列を両方指定。プレースホルダは無しで半角英数になるかを検証します。</p>
+    </div>
+
+    <div class="test-box">
+        <label for="INEWEMAIL1">4. 属性全部盛り（名前にEMAIL ＋ type/inputmode/autocomplete）</label>
+        <input type="email" id="INEWEMAIL1" name="INEWEMAIL1" inputmode="email" autocomplete="email">
+        <p>※ブラウザに「ここはユーザー本人のメールアドレスを入力・自動補完する場所だ」と最も強く認識させる設定です。端末の自動入力機能が起動することで、強制的に半角英数（アルファベット）に切り替わるかを検証します。</p>
     </div>
 
 </body>
