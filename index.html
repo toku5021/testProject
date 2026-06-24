@@ -3,19 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>スマホキーボード挙動テスト</title>
+    <title>QWERTY配列＆3大制御ハック 完全検証ページ</title>
     <style>
         body {
             font-family: sans-serif;
             padding: 20px;
             background-color: #f5f5f5;
         }
-        .test-box {
+        .test-container {
             background: #fff;
-            padding: 15px;
-            margin-bottom: 20px;
+            padding: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .input-group {
+            margin-bottom: 20px;
         }
         label {
             display: block;
@@ -25,42 +29,136 @@
         }
         input {
             width: 100%;
-            padding: 10px;
-            font-size: 16px; /* iOSの自動ズーム防止のため16px以上を推奨 */
-            border: 1px solid #ccc;
+            padding: 12px;
+            font-size: 16px; /* iOSのズーム防止 */
+            border: 2px solid #ccc;
             border-radius: 4px;
             box-sizing: border-box;
+            transition: border-color 0.2s;
         }
-        p {
+        input:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+        .radio-group {
+            margin-bottom: 15px;
+            padding: 12px;
+            background: #e9ecef;
+            border-radius: 4px;
+        }
+        p.desc {
             font-size: 13px;
             color: #666;
             margin-top: 5px;
-            margin-bottom: 0;
+            line-height: 1.4;
+        }
+        .status-msg {
+            font-size: 12px;
+            color: #d32f2f;
+            font-weight: bold;
+            margin-top: 5px;
+            min-height: 18px;
         }
     </style>
 </head>
 <body>
 
-    <h1>キーボード入力モード 検証ページ</h1>
-    <p style="margin-bottom: 20px; font-size: 14px;">各入力エリアをタップして、スマホの初期キーボードが「半角英数」になるか、「日本語（かな）」のままかを確認してください。</p>
+    <div class="test-container">
+        <h2>QWERTY配列起動 ＆ 3大制御フォーム</h2>
+        
+        <p class="desc" style="background: #e3f2fd; padding: 10px; border-radius: 4px; color: #1565c0;">
+            <strong>【実験手順】</strong><br>
+            1. 別のアプリ（メモ帳など）で、キーボードを手動で一度<strong>「日本語かな（ひらがなフリック）」</strong>モードに切り替えておきます。<br>
+            2. 下のラジオボタンの文字をタップすると、隠れていた入力欄が出現し、0.1秒後に自動でフォーカス（選択状態）が当たります。
+        </p>
 
-    <div class="test-box">
-        <label for="pattern1">1. type="text" ＋ プレースホルダあり</label>
-        <input type="text" id="pattern1" placeholder="入力例: username@jaccs.co.jp">
-        <p>※元々のコードのパターンです。placeholderの文字列をブラウザが解析して気を利かせるか検証します。</p>
+        <div class="radio-group">
+            <input type="radio" name="mail_hack_trigger" id="caption00_hack">
+            <label for="caption00_hack" style="display:inline; font-weight:normal; cursor:pointer;">
+                <strong>メールアドレス1の変更（ここをタップ）</strong>
+            </label>
+        </div>
+
+        <form method="POST" action="" name="MainForm" autocomplete="off" id="list00_hack" style="display: none;">
+            
+            <div class="input-group">
+                <label for="INEWEMAIL1">新しいメールアドレス（QWERTY起動用）</label>
+                
+                <input type="email" 
+                       id="INEWEMAIL1" 
+                       name="INEWEMAIL1" 
+                       inputmode="email" 
+                       autocomplete="email" 
+                       value="">
+                
+                <div id="replace_status" class="status-msg"></div>
+                
+                <p class="desc" style="margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 10px;">
+                    <strong>【このコードで動く3つの仕掛け】</strong><br>
+                    ・<strong>後出し表示＆時間差フォーカス</strong>：エリアが現れた直後にJSで枠を選択することで、スマホに「QWERTY（英語）配列」を強制的に読み直させます。<br>
+                    ・<strong>リアルタイム置換JS</strong>：万が一「日本語かな」のまま立ち上がって文字を打っても、全角やひらがなをその場で半角英数字に自動置換します。
+                </p>
+            </div>
+
+        </form>
     </div>
 
-    <div class="test-box">
-        <label for="pattern2">2. inputmode="email" のみ指定（type="text"）</label>
-        <input type="text" id="pattern3" inputmode="latin">
-        <p>※プレースホルダは無し。キーボードの配列（@マークの有無）は変わるが、英語モードに強制されるか検証します。</p>
-    </div>
+    <script src="https://code.jquery.com/jquery-1.8.3.min.js"></script>
+    <script>
+    $(function() {
+        
+        // -------------------------------------------------------------
+        // 仕掛け②：ラジオボタン選択でエリアを表示し、時間差でフォーカスを当てるJS
+        // -------------------------------------------------------------
+        $('#caption00_hack').on('click', function() {
+            // 隠れていたフォームをスライド（またはパッと）表示
+            $('#list00_hack').show();
+            
+            // スマホのブラウザに「画面構造が変わった」と認識させ、
+            // 前回の日本語モードを忘れて type="email" をゼロから読み直させるため、
+            // あえて0.1秒（100ミリ秒）だけタイミングをずらして自動フォーカスさせます。
+            setTimeout(function() {
+                $('#INEWEMAIL1').focus();
+            }, 100);
+        });
 
-    <div class="test-box">
-        <label for="pattern3">3. type="url5" ＋ inputmode="email"（最強セット）</label>
-        <input type="text" id="pattern3" inputmode="email">
-        <p>※プレースホルダは無し。データの意味とキーボードの両方を指定。iOSが最も確実に「半角英数」で立ち上げるか検証します。</p>
-    </div>
+        // -------------------------------------------------------------
+        // 仕掛け③：ユーザーが全角・ひらがなで打ってきた文字をリアルタイムに半角にするJS
+        // -------------------------------------------------------------
+        $('#INEWEMAIL1').on('input', function(e) {
+            let value = e.target.value;
+            let statusArea = $('#replace_status');
+            
+            // 1. 全角英数字（ａ〜ｚ、Ａ〜Ｚ、０〜９）を半角に変換
+            let halfValue = value.replace(/[Ａ-Ｚａ-ｚ０-９]/g, function(s) {
+                return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
+            });
+            
+            // 2. メールアドレス用の全角記号を半角に置換
+            halfValue = halfValue.replace(/＠/g, '@')
+                                 .replace(/．/g, '.')
+                                 .replace(/＿/g, '_')
+                                 .replace(/ー/g, '-');
+            
+            // 3. メールアドレスに使えないひらがな・漢字を強制消去
+            let finalValue = halfValue.replace(/[^a-zA-Z0-9@._-]/g, '');
 
+            // 変換が行われた（文字が書き換わった）場合の処理
+            if (value !== finalValue) {
+                // 入力欄の中身を、JSの力で強制的に半角に書き換える
+                e.target.value = finalValue;
+                
+                // 画面に置換メッセージを表示
+                statusArea.text("【JS制御】全角入力をリアルタイムで半角英数に置換しました。");
+                
+                // 2秒後にメッセージを消去
+                setTimeout(function() {
+                    statusArea.empty();
+                }, 2000);
+            }
+        });
+
+    });
+    </script>
 </body>
 </html>
