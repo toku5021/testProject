@@ -3,23 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>スマホキーボード制御ハック 検証ページ</title>
+    <title>表示タイミングとキーボード制御の検証</title>
     <style>
         body {
             font-family: sans-serif;
             padding: 20px;
             background-color: #f5f5f5;
         }
-        .test-container {
+        .test-box {
             background: #fff;
-            padding: 20px;
+            padding: 15px;
+            margin-bottom: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            max-width: 500px;
-            margin: 0 auto;
-        }
-        .input-group {
-            margin-bottom: 20px;
         }
         label {
             display: block;
@@ -27,144 +23,83 @@
             margin-bottom: 8px;
             color: #333;
         }
-        input {
+        input[type="email"] {
             width: 100%;
-            padding: 12px;
-            font-size: 16px; /* iOSのズーム防止 */
-            border: 2px solid #ccc;
+            padding: 10px;
+            font-size: 16px; /* iOSズーム防止 */
+            border: 1px solid #ccc;
             border-radius: 4px;
             box-sizing: border-box;
-            transition: border-color 0.2s;
         }
-        input:focus {
-            border-color: #007bff;
-            outline: none;
-        }
-        button {
-            display: block;
-            width: 100%;
-            padding: 12px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
+        .radio-group {
             margin-bottom: 10px;
+            padding: 10px;
+            background: #e9ecef;
+            border-radius: 4px;
         }
-        button:active {
-            background-color: #0056b3;
-        }
-        p.desc {
+        p {
             font-size: 13px;
             color: #666;
             margin-top: 5px;
-            line-height: 1.4;
+            margin-bottom: 0;
         }
-        .status-msg {
-            font-size: 12px;
-            color: #d32f2f;
-            font-weight: bold;
-            margin-top: 5px;
-            min-height: 18px;
+        .note {
+            background-color: #e3f2fd;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
 
-    <div class="test-container">
-        <h2>キーボード3大制御ハック 実験フォーム</h2>
+    <h1>表示タイミングによるキーボード挙動の検証</h1>
+    <div class="note">
+        <p><strong>【実験のやり方】</strong></p>
+        他のアプリなどで、スマホのキーボードを一度<strong>「日本語かな（ひらがな）」</strong>モードに切り替えてから、以下の2つのパターンを試してください。
+    </div>
+
+    <div class="test-box">
+        <label for="email_normal">パターンA：最初から見えている入力欄</label>
+        <input type="email" id="email_normal" inputmode="email">
+        <p>👉 <strong>結果予想</strong>：最初から見えているため、スマホが手抜きをして前回の「日本語かな」を引き継いでしまいやすい状態です。</p>
+    </div>
+
+    <div class="test-box">
+        <label>パターンB：ラジオボタン選択で後から現れる入力欄</label>
         
-        <p class="desc" style="background: #e3f2fd; padding: 10px; border-radius: 4px; color: #1565c0;">
-            <strong>【実験手順】</strong><br>
-            1. まず、別のアプリなどでキーボードを一度「日本語かな（ひらがな）」モードにしてください。<br>
-            2. 下の青いボタンを押すと、JavaScriptが発動して入力エリアが出現し、自動的にフォーカスが当たります。
-        </p>
+        <div class="radio-group">
+            <input type="radio" name="mail_change" id="caption00_test">
+            <label id="label00" for="caption00_test" style="display:inline; font-weight:normal;">メールアドレスを変更する（ここをタップ）</label>
+        </div>
 
-        <button id="trigger_btn">メールアドレス入力欄を開く</button>
-
-        <form method="POST" action="" name="MainForm" autocomplete="off" id="target_form" style="display: none;">
-            
-            <div class="input-group">
-                <label for="INEWEMAIL1">新しいメールアドレス</label>
-                <input type="email" 
-                       id="INEWEMAIL1" 
-                       name="INEWEMAIL1" 
-                       inputmode="email" 
-                       autocomplete="email" 
-                       value="">
-                
-                <div id="replace_status" class="status-msg"></div>
-                
-                <p class="desc">
-                    <strong>【仕掛けの解説】</strong><br>
-                    ・<strong>JSによる後出しフォーカス</strong>：ボタンを押した「0.1秒後」にJSでこの枠を強制選択し、スマホに属性を強制リフレッシュさせています。<br>
-                    ・<strong>リアルタイム置換JS</strong>：仮に日本語かなモードのまま「あいう」や全角「ａｂｃ」と打っても、JSが1文字ごとに検知して一瞬で半角英数に強制変換します。
-                </p>
-            </div>
-
-        </form>
+        <div id="list00_test" style="display: none; padding: 10px; border-top: 1px id solid #ccc;">
+            <label for="email_dynamic">新しいメールアドレスを入力：</label>
+            <input type="email" id="email_dynamic" inputmode="email">
+        </div>
+        
+        <p>👉 <strong>結果予想</strong>：ラジオボタンを押した瞬間にJSで表示させ、0.1秒後に自動フォーカスを当てます。画面に変化が起きたことで、スマホが属性をフレッシュに読み直し、**前回の日本語かなを忘れて半角英数に切り替わりやすくなります。**</p>
     </div>
 
     <script src="https://code.jquery.com/jquery-1.8.3.min.js"></script>
     <script>
-    $(function() {
-        
-        // -------------------------------------------------------------
-        // 仕掛け②：ボタンクリックでエリアを表示し、時間差でフォーカスを当てるJS
-        // -------------------------------------------------------------
-        $('#trigger_btn').on('click', function() {
-            // フォームをパッと表示
-            $('#target_form').show();
-            $(this).hide(); // ボタンは隠す
+    $(function(){
+        // ラジオボタンをクリックしたときの制御 [cite: 1449]
+        $("#caption00_test").on("click", function() {
             
-            // スマホのブラウザに前回のモードを忘れさせるため、
-            // 0.1秒（100ミリ秒）だけわざとタイミングをずらして強制フォーカス
+            // 1. 隠れていた入力欄のエリアをパッと表示させる [cite: 1449]
+            $("#list00_test").show();
+            
+            // 2. 【ここが決定的な制御コード】
+            // 表示された直後（0.1秒後）に、JavaScript側から強制的にフォーカス（選択状態）を当てる
             setTimeout(function() {
-                $('#INEWEMAIL1').focus();
+                $("#email_dynamic").focus();
             }, 100);
+            
         });
-
-        // -------------------------------------------------------------
-        // 仕掛け③：ユーザーが全角で打ってきた文字をリアルタイムに半角にするJS
-        // -------------------------------------------------------------
-        $('#INEWEMAIL1').on('input', function(e) {
-            let value = e.target.value;
-            let statusArea = $('#replace_status');
-            
-            // 1. 全角英数字（ａ〜ｚ、Ａ〜Ｚ、０〜９）を半角に変換
-            let halfValue = value.replace(/[Ａ-Ｚａ-ｚ０-９]/g, function(s) {
-                return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
-            });
-            
-            // 2. メールアドレスで特によく使われる全角記号を半角に置換
-            halfValue = halfValue.replace(/＠/g, '@')
-                                 .replace(/．/g, '.')
-                                 .replace(/＿/g, '_')
-                                 .replace(/ー/g, '-')
-                                 .replace(/ー/g, '-'); // ハイフンや長音のケア
-            
-            // 3. ひらがな・漢字など、メールアドレスに絶対使えない全角文字を強制消去
-            // (もし日本語のまま打たれても、自動で消えるか半角英語になります)
-            let finalValue = halfValue.replace(/[^a-zA-Z0-9@._-]/g, '');
-
-            // 変換が行われたかどうかの判定
-            if (value !== finalValue) {
-                // 入力欄の文字を、JSで強制的に半角に書き換える
-                e.target.value = finalValue;
-                
-                // 画面に「置換したよ」とわかるようにメッセージを出す
-                statusArea.text("【JS制御】全角入力をリアルタイムで半角英数に置換しました。");
-                
-                // 2秒後にメッセージを消す
-                setTimeout(function() {
-                    statusArea.empty();
-                }, 2000);
-            }
-        });
-
     });
     </script>
+
 </body>
 </html>
