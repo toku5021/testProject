@@ -3,25 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>iOS キーボード制御テスト (CSS完全強制版)</title>
+    <title>安全性最大化・QWERTY強制キーボードテスト</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: #f5f5f7;
-            color: #1d1d1f;
             padding: 20px;
             margin: 0;
-        }
-        h1 {
-            font-size: 18px;
-            text-align: center;
-            margin-bottom: 5px;
-        }
-        .subtitle {
-            font-size: 12px;
-            color: #86868b;
-            text-align: center;
-            margin-bottom: 20px;
         }
         .card {
             background: #ffffff;
@@ -35,18 +23,6 @@
             font-weight: bold;
             margin-bottom: 4px;
         }
-        .card-code {
-            font-size: 11px;
-            color: #0071e3;
-            font-family: monospace;
-            margin-bottom: 8px;
-        }
-        .card-desc {
-            font-size: 12px;
-            color: #515154;
-            margin-bottom: 12px;
-            line-height: 1.4;
-        }
         input {
             width: 100%;
             padding: 12px;
@@ -55,69 +31,80 @@
             border-radius: 8px;
             box-sizing: border-box;
             background-color: #fbfbfd;
-            -webkit-appearance: none;
         }
         input:focus {
             outline: none;
             border-color: #0071e3;
             background-color: #ffffff;
         }
-        .btn-reset {
-            display: block;
-            width: 100%;
-            padding: 12px;
-            background: #0071e3;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
 
-        /* 【ここが重要】
-          IME（日本語入力）をブラウザ側で物理的に無効化するクラス。
-          直前の記憶が「かな」であっても、日本語入力を立ち上げさせないことで
-          確実にQWERTYフルキーボードを強制的に引き出します。
+        /* 【超重要・防衛策】
+          万が一ブラウザの仕様変更で、JavaScriptの戻し処理(emailへの再変更)がブロックされ、
+          password のままフリーズしてしまっても、文字が黒丸(●)にならないようにする保険のCSS。
+          これがあるため、JavaScriptがどう壊れても「入力できない」という最悪の事態を防げます。
         */
-        .force-qwerty {
-            ime-mode: disabled !important;
-            -webkit-ime-mode: disabled !important;
+        .safe-hack-input {
+            -webkit-text-security: none !important;
+            text-security: none !important;
         }
     </style>
 </head>
 <body>
 
-<h1>iOS キーボード制御テスト<br>(CSS完全強制版)</h1>
-<p class="subtitle">将来のブラウザアップデートでも絶対に壊れない安全な実装です</p>
+<h1>iOS キーボード制御（安全防御版）</h1>
 
 <div class="card" style="background-color: #e8e8ed;">
     <div class="card-title">【実験用】直前の入力モードを「かな」にする欄</div>
-    <p class="card-desc">テスト前にここで一度キーボードを開き、わざと「日本語かな（テンキー）」モードに切り替えてから下の本命欄をタップしてください。</p>
-    <input type="text" placeholder="ここで「かな」に切り替え">
+    <input type="text" placeholder="ここで一度「かな」に切り替えてください">
 </div>
 
-<button class="btn-reset" onclick="location.reload()">
-    ページを再読み込み (リセット)
-</button>
-
 <div class="card">
-    <div class="card-title">対策パターン：CSSによる日本語入力の完全禁止</div>
-    <div class="card-code">HTML: type="email" class="force-qwerty"</div>
-    <p class="card-desc">
-        JavaScriptハック（一時的なpassword化）は一切使用していません。<br>
-        文字は隠れず、直前のかな記憶を完全にシャットアウトして最初からQWERTY（英語配列）で起動します。
-    </p>
+    <div class="card-title">新しいメールアドレス1</div>
+    
     <input
         type="email"
-        id="secure-qwerty-email"
+        id="email1_1"
         name="INEWEMAIL1"
-        class="force-qwerty"
+        class="safe-hack-input"
         autocorrect="off"
         autocapitalize="none"
         autocomplete="off"
-        placeholder="タップして確認">
+        placeholder="入力例: username@jaccs.co.jp">
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const inputElement = document.getElementById('email1_1');
+
+    if (!inputElement) return;
+
+    inputElement.addEventListener('focus', function () {
+        // すでに値がある場合は、ユーザーが編集中のためハックを行わない
+        if (this.value && this.value.length > 0) {
+            return;
+        }
+
+        // ループ（チャタリング）防止フラグ
+        if (this.dataset.switching === 'true') {
+            return;
+        }
+        this.dataset.switching = 'true';
+
+        // ② フォーカスされた瞬間に一瞬だけ password にしてQWERTYを強制
+        this.type = 'password';
+
+        // タイマーで即座に email に戻す
+        setTimeout(() => {
+            // ③ 正規の email に戻す（失敗してもベースが email なので安全）
+            this.type = 'email';
+            this.dataset.switching = 'false';
+
+            // type変更によって一部ブラウザでフォーカスが外れる現象への対策
+            this.focus();
+        }, 10);
+    });
+});
+</script>
 
 </body>
 </html>
