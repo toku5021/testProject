@@ -3,19 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>キーボードテスト</title>
+    <title>キーボード強制リセットテスト</title>
 </head>
 <body>
 
     <form method="POST" action="">
-        <p>メールアドレス入力欄：</p>
+        <label for="email_target">メールアドレス入力：</label>
         <input 
-            type="text" 
-            id="email1_1" 
-            name="INEWEMAIL1" 
-            placeholder="username@jaccs.co.jp"
-            autocomplete="email"> 
-            </form>
+            type="email" 
+            id="email_target" 
+            name="USER_EMAIL" 
+            inputmode="email"
+            autocomplete="email"
+            placeholder="username@example.com">
+    </form>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var emailInput = document.getElementById("email_target");
+
+            // タップ（あるいはフォーカス）された瞬間にブラウザのキーボードエンジンを強制リセットする処理
+            emailInput.addEventListener("touchstart", function() {
+                // 一瞬だけ入力を無効化（readOnly）にしてフォーカスを当てることで、
+                // ブラウザに「直前のキーボード状態」を完全に破棄させ、ゼロから再走査させる
+                emailInput.readOnly = true;
+                emailInput.focus();
+
+                setTimeout(function() {
+                    emailInput.readOnly = false;
+                }, 50); // わずかな遅延の後に編集可能に戻す
+            });
+        });
+    </script>
 
 </body>
 </html>
