@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>iOS キーボード制御テスト (JSハック版)</title>
+    <title>iOS キーボードテスト（安定版）</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -27,7 +27,7 @@
         input {
             width: 100%;
             padding: 12px;
-            font-size: 16px; /* iOSのズーム防止 */
+            font-size: 16px; /* iOS Safariの自動ズームを防止 */
             border: 1px solid #d2d2d7;
             border-radius: 8px;
             box-sizing: border-box;
@@ -35,6 +35,18 @@
             -webkit-appearance: none;
         }
         input:focus { outline: none; border-color: #0071e3; background-color: #ffffff; }
+        
+        /* ダミー要素用の非表示スタイル（画面外に配置して見えなくする標準的な方法） */
+        .hidden-pwd {
+            position: absolute;
+            top: -100px;
+            left: -100px;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+            pointer-events: none;
+        }
+
         .btn-reset {
             display: block;
             width: 100%;
@@ -51,61 +63,54 @@
 </head>
 <body>
 
-    <h1>iOS キーボード制御テスト<br>(JSハック版)</h1>
+    <h1>iOS キーボードテスト<br>（安定版）</h1>
     <p class="subtitle">ページを開き直したり、リセットボタンを押して試してください</p>
 
-    <button class="btn-reset" onclick="location.reload()">ページを再読み込み (リセット)</button>
+    <button class="btn-reset" onclick="location.reload()">ページを再読み込み</button>
 
     <div class="card">
-        <div class="card-title">パターンA：瞬時切り替え（フォーカス時）</div>
-        <div class="card-code">JS: focus時に password ➔ text (inputmode="url")</div>
-        <p class="card-desc">タップされた瞬間に一瞬だけpasswordにしてQWERTYを呼び出し、ミリ秒単位でtextに戻す技です。</p>
-        <input type="text" id="hack-input-url" inputmode="url" autocorrect="off" autocapitalize="none" autocomplete="off" placeholder="タップして確認">
-    </div>
-
-    <div class="card">
-        <div class="card-title">パターンB：メール形式への瞬時切り替え</div>
-        <div class="card-code">JS: focus時に password ➔ email</div>
-        <p class="card-desc">上記と同様の手法で、最終的にemailモードに着地させます。@マークがあるQWERTYを狙います。</p>
-        <input type="email" id="hack-input-email" autocorrect="off" autocapitalize="none" autocomplete="off" placeholder="タップして確認">
+        <div class="card-title">対策：ダミーのパスワード欄を経由</div>
+        <div class="card-code">HTML属性(url) + フォーカス瞬時移動</div>
+        <p class="card-desc">本番の入力欄をタップした際、画面外にある「見えないパスワード欄」に一瞬だけフォーカスを当ててQWERTYを起動し、即座に本番のテキスト欄にフォーカスを戻します。本番の文字は絶対に●になりません。</p>
+        
+        <input type="password" id="dummy-pwd" class="hidden-pwd">
+        
+        <input type="text" id="real-input" inputmode="url" autocorrect="off" autocapitalize="none" autocomplete="off" placeholder="ここをタップ">
     </div>
 
     <div class="card">
         <div class="card-title">比較用：通常のテキスト欄</div>
         <div class="card-code">通常の type="text"</div>
-        <p class="card-desc">JS制御なし。直前のキーボードが「かな（テンキー）」なら、かなが開きます。</p>
+        <p class="card-desc">制御なし。直前に使っていたキーボードが「日本語かな（テンキー）」なら、かなが開きます。</p>
         <input type="text" placeholder="通常のテキスト欄">
     </div>
 
     <script>
-        // パターンAとBに対して、フォーカス時の一瞬の password 切り替えを仕込む
-        function applyPasswordHack(inputId, finalType) {
-            const input = document.getElementById(inputId);
-            if (!input) return;
-
-            input.addEventListener('focus', function() {
-                // すでに処理中の場合はスキップ
-                if (this.dataset.switching === 'true') return;
-                this.dataset.switching = 'true';
-
-                // 1. 一瞬 password にしてQWERTYを強制起動させる
-                this.type = 'password';
-
-                // 2. 非常に短い時間（10ミリ秒後）に本来のタイプに戻す
-                setTimeout(() => {
-                    this.type = finalType;
-                    this.dataset.switching = 'false';
-                    
-                    // タイプ変更でフォーカスが外れることがあるため、念のため再フォーカス
-                    this.focus(); 
-                }, 10);
-            });
-        }
-
-        // ページ読み込み時にハックを適用
         document.addEventListener('DOMContentLoaded', () => {
-            applyPasswordHack('hack-input-url', 'text');
-            applyPasswordHack('hack-input-email', 'email');
+            const realInput = document.getElementById('real-input');
+            const dummyPwd = document.getElementById('dummy-pwd');
+
+            if (realInput && dummyPwd) {
+                // 連続でハックが走るのを防ぐフラグ
+                let isProcessing = false;
+
+                realInput.addEventListener('touchstart', function(e) {
+                    if (isProcessing) return;
+                    isProcessing = true;
+
+                    // 1. 本来のタップ動作（直接フォーカスが当たるの）を一時停止
+                    e.preventDefault();
+
+                    // 2. 見えないパスワード欄にフォーカスを当ててQWERTYを呼び出す
+                    dummyPwd.focus();
+
+                    // 3. わずかな時間（10ミリ秒）を置いて、本番の入力欄にフォーカスを移動
+                    setTimeout(() => {
+                        realInput.focus();
+                        isProcessing = false;
+                    }, 10);
+                });
+            }
         });
     </script>
 
