@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>iOS キーボード制御（本番環境再現版）</title>
-    
+    <title>iOS キーボード制御（完全同期版）</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -33,85 +32,70 @@
         }
         input:focus { outline: none; border-color: #0071e3; background-color: #ffffff; }
         
-        /* 動的に追加・削除されるダミーのエラーメッセージ領域 */
-        .error-message-area {
+        /* 激しく書き換えられる本番同様のエラーエリア */
+        .txta01 {
+            margin-top: 5px;
+        }
+        .errorList {
             font-size: 12px;
             color: #ff3b30;
+            background-color: #fff0f0;
+            padding: 5px;
+            border-radius: 4px;
             margin-top: 5px;
-            min-height: 18px;
-        }
-        .btn-reset {
-            display: block;
-            width: 100%;
-            padding: 12px;
-            background: #0071e3;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: bold;
-            margin-bottom: 20px;
         }
     </style>
-
     <script src="https://code.jquery.com/jquery-1.8.3.min.js"></script>
 </head>
 <body>
 
-    <h1>iOS キーボード再現テスト</h1>
-    <button class="btn-reset" onclick="location.reload()">ページを再読み込み (リセット)</button>
+    <h1>iOS キーボード完全同期テスト</h1>
+    <button style="display:block; width:100%; padding:12px; background:#0071e3; color:white; border:none; border-radius:8px; font-size:14px; font-weight:bold; margin-bottom:20px;" onclick="location.reload()">ページを再読み込み</button>
 
     <div class="card">
-        <div class="label">メールアドレス1 (本番再現)</div>
+        <div class="label">新しいメールアドレス1</div>
         <div class="sub-label">&lt;半角英数&gt;</div>
-        
-        <input id="email1_1" type="text" inputmode="email" maxlength="60"
-               autocorrect="off" autocapitalize="none" autocomplete="off" 
-               placeholder="入力例: username@jaccs.co.jp">
-               
-        <div id="mail1_1EmArea" class="error-message-area"></div>
+        <div id="mail1BgEmArea" class="txta01">
+            <div id="mail1_1EmArea">
+                <input id="email1_1" type="text" maxlength="60" name="INEWEMAIL1" inputmode="email"
+                       autocorrect="off" autocapitalize="none" autocomplete="off" 
+                       placeholder="入力例: username@jaccs.co.jp">
+            </div>
+        </div>
     </div>
 
     <div class="card">
         <div class="label">比較用：通常のテキスト欄</div>
-        <div class="sub-label">制御なし。直前のキーボード記憶を引き継ぎます。</div>
+        <div class="sub-label">制御なし（かなボードが引き継がれます）</div>
         <input type="text" placeholder="通常のテキスト欄">
     </div>
 
     <script>
         jQuery(function($){
             
-            // ページ読み込み時に、あえてダミーのエラー要素をDOM内に生成しておく
-            // （本番環境で「エラーを消去する処理」を意図的に走らせるため）
-            $('#mail1_1EmArea').append('<span id="dummy-error-id" style="display:none;"></span>');
-
             /**
-             * 本番のチェック処理（3.txt / 4.txt）のメカニズムをシミュレート
-             * フォーカスが当たった瞬間に、iOSのキーボード記憶をリセットさせる激しいDOM操作を行います。
+             * 本番の 3.txt (1395行目) および 4.txt のバリデーションによる
+             * 高速な「DOM追加・削除」の負荷を完全に再現する関数
              */
-            function triggerKeyboardReset() {
-                // 1. 4.txt (1647行目付近) の removeErrorMessage 処理の再現
-                // 存在するダミーエラーメッセージを検索し、DOMから完全に削除（これがiOSに刺激を与えます）
-                if ($('#dummy-error-id').length > 0) {
-                    $('#dummy-error-id').remove();
-                }
+            function executeHeavyValidationMock() {
+                // 1. 古いメッセージを一斉に削除する処理（4.txt の removeErrorMessage 相当）
+                $("#mail1_1EmArea .errorList").remove();
+                $("#mail1BgEmArea").removeClass("background21");
 
-                // 2. バルーン表示状態の判定や非表示処理をエミュレート
-                // 本番の RIA_Baloon.js や 1.txt で行われているスタイルの一斉書き換え
-                $("#mail1_1EmArea").css("opacity", "1");
+                // 2. ミリ秒単位で「エラー検知➔追加➔即クリア」の波を発生させ、iOS Safariのキャッシュを揺さぶる
+                // この一瞬のDOMの乱れが、iOSの「キーボード記憶」を強制リセットさせます
+                var dummyError = '<div class="errorList" style="position:absolute; opacity:0; pointer-events:none;"><p>dummy</p></div>';
+                $("#mail1_1EmArea").append(dummyError);
                 
-                // 3. 次回のタップに備えて、一瞬後にまたダミーエラーを仕込んでおく
                 setTimeout(function() {
-                    if ($('#dummy-error-id').length === 0) {
-                        $('#mail1_1EmArea').append('<span id="dummy-error-id" style="display:none;"></span>');
-                    }
-                }, 200);
+                    $("#mail1_1EmArea .errorList").remove();
+                }, 5);
             }
 
-            // 本番環境（3.txtの1395行目）と同様に、blur（フォーカスが外れた時）だけでなく、
-            // 今回はQWERTY表示を「カーソルを合わせた瞬間」に固定するため、focus時にもこの処理をバインドします。
-            $("#email1_1").on("focus keyup blur", function() {
-                triggerKeyboardReset();
+            // 本番（3.txtの1395行目）のイベントバインドを完全再現
+            // keyup（文字入力の瞬間）と blur に加え、フォーカスした瞬間にも走らせてQWERTYを固定します
+            $("#email1_1").on("focus keyup blur", function(e) {
+                executeHeavyValidationMock();
             });
 
         });
