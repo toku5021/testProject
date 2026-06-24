@@ -2,27 +2,17 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>iOS キーボード制御テスト (JSハック版)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>iOS キーボード制御（本番環境再現版）</title>
+    
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: #f5f5f7;
-            color: #1d1d1f;
             padding: 20px;
-            margin: 0;
+            color: #1d1d1f;
         }
-        h1 {
-            font-size: 18px;
-            text-align: center;
-            margin-bottom: 5px;
-        }
-        .subtitle {
-            font-size: 12px;
-            color: #86868b;
-            text-align: center;
-            margin-bottom: 20px;
-        }
+        h1 { font-size: 18px; text-align: center; }
         .card {
             background: #ffffff;
             border-radius: 12px;
@@ -30,23 +20,8 @@
             margin-bottom: 16px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
-        .card-title {
-            font-size: 14px;
-            font-weight: bold;
-            margin-bottom: 4px;
-        }
-        .card-code {
-            font-size: 11px;
-            color: #0071e3;
-            font-family: monospace;
-            margin-bottom: 8px;
-        }
-        .card-desc {
-            font-size: 12px;
-            color: #515154;
-            margin-bottom: 12px;
-            line-height: 1.4;
-        }
+        .label { font-size: 14px; font-weight: bold; margin-bottom: 5px; }
+        .sub-label { font-size: 11px; color: #86868b; margin-bottom: 10px; }
         input {
             width: 100%;
             padding: 12px;
@@ -55,12 +30,15 @@
             border-radius: 8px;
             box-sizing: border-box;
             background-color: #fbfbfd;
-            -webkit-appearance: none;
         }
-        input:focus {
-            outline: none;
-            border-color: #0071e3;
-            background-color: #ffffff;
+        input:focus { outline: none; border-color: #0071e3; background-color: #ffffff; }
+        
+        /* 動的に追加・削除されるダミーのエラーメッセージ領域 */
+        .error-message-area {
+            font-size: 12px;
+            color: #ff3b30;
+            margin-top: 5px;
+            min-height: 18px;
         }
         .btn-reset {
             display: block;
@@ -75,95 +53,69 @@
             margin-bottom: 20px;
         }
     </style>
+
+    <script src="https://code.jquery.com/jquery-1.8.3.min.js"></script>
 </head>
 <body>
 
-<h1>iOS キーボード制御テスト<br>(JSハック版)</h1>
-<p class="subtitle">ページを開き直したり、リセットボタンを押して試してください</p>
+    <h1>iOS キーボード再現テスト</h1>
+    <button class="btn-reset" onclick="location.reload()">ページを再読み込み (リセット)</button>
 
-<button class="btn-reset" onclick="location.reload()">
-    ページを再読み込み (リセット)
-</button>
+    <div class="card">
+        <div class="label">メールアドレス1 (本番再現)</div>
+        <div class="sub-label">&lt;半角英数&gt;</div>
+        
+        <input id="email1_1" type="text" inputmode="email" maxlength="60"
+               autocorrect="off" autocapitalize="none" autocomplete="off" 
+               placeholder="入力例: username@jaccs.co.jp">
+               
+        <div id="mail1_1EmArea" class="error-message-area"></div>
+    </div>
 
-<div class="card">
-    <div class="card-title">パターンA：瞬時切り替え（フォーカス時）</div>
-    <div class="card-code">JS: focus時に password → text (inputmode="url")</div>
-    <p class="card-desc">
-        値が空のときのみ password ハックを実施します。
-    </p>
-    <input
-        type="text"
-        id="hack-input-url"
-        inputmode="url"
-        autocorrect="off"
-        autocapitalize="none"
-        autocomplete="off"
-        placeholder="タップして確認">
-</div>
+    <div class="card">
+        <div class="label">比較用：通常のテキスト欄</div>
+        <div class="sub-label">制御なし。直前のキーボード記憶を引き継ぎます。</div>
+        <input type="text" placeholder="通常のテキスト欄">
+    </div>
 
-<div class="card">
-    <div class="card-title">パターンB：メール形式への瞬時切り替え</div>
-    <div class="card-code">JS: focus時に password → email</div>
-    <p class="card-desc">
-        値が空のときのみ password ハックを実施します。
-    </p>
-    <input
-        type="email"
-        id="hack-input-email"
-        autocorrect="off"
-        autocapitalize="none"
-        autocomplete="off"
-        placeholder="タップして確認">
-</div>
+    <script>
+        jQuery(function($){
+            
+            // ページ読み込み時に、あえてダミーのエラー要素をDOM内に生成しておく
+            // （本番環境で「エラーを消去する処理」を意図的に走らせるため）
+            $('#mail1_1EmArea').append('<span id="dummy-error-id" style="display:none;"></span>');
 
-<div class="card">
-    <div class="card-title">比較用：通常のテキスト欄</div>
-    <div class="card-code">通常の type="text"</div>
-    <p class="card-desc">
-        JS制御なし。
-    </p>
-    <input type="text" placeholder="通常のテキスト欄">
-</div>
+            /**
+             * 本番のチェック処理（3.txt / 4.txt）のメカニズムをシミュレート
+             * フォーカスが当たった瞬間に、iOSのキーボード記憶をリセットさせる激しいDOM操作を行います。
+             */
+            function triggerKeyboardReset() {
+                // 1. 4.txt (1647行目付近) の removeErrorMessage 処理の再現
+                // 存在するダミーエラーメッセージを検索し、DOMから完全に削除（これがiOSに刺激を与えます）
+                if ($('#dummy-error-id').length > 0) {
+                    $('#dummy-error-id').remove();
+                }
 
-<script>
-    function applyPasswordHack(inputId, finalType) {
-        const input = document.getElementById(inputId);
-
-        if (!input) {
-            return;
-        }
-
-        input.addEventListener('focus', function () {
-
-            // 処理中は何もしない
-            if (this.dataset.switching === 'true') {
-                return;
+                // 2. バルーン表示状態の判定や非表示処理をエミュレート
+                // 本番の RIA_Baloon.js や 1.txt で行われているスタイルの一斉書き換え
+                $("#mail1_1EmArea").css("opacity", "1");
+                
+                // 3. 次回のタップに備えて、一瞬後にまたダミーエラーを仕込んでおく
+                setTimeout(function() {
+                    if ($('#dummy-error-id').length === 0) {
+                        $('#mail1_1EmArea').append('<span id="dummy-error-id" style="display:none;"></span>');
+                    }
+                }, 200);
             }
 
-            // 値が入力済みならHackしない
-            if (this.value && this.value.length > 0) {
-                return;
-            }
+            // 本番環境（3.txtの1395行目）と同様に、blur（フォーカスが外れた時）だけでなく、
+            // 今回はQWERTY表示を「カーソルを合わせた瞬間」に固定するため、focus時にもこの処理をバインドします。
+            $("#email1_1").on("focus keyup blur", function() {
+                triggerKeyboardReset();
+            });
 
-            this.dataset.switching = 'true';
-
-            this.type = 'password';
-
-            setTimeout(() => {
-                this.type = finalType;
-                this.dataset.switching = 'false';
-
-                // type変更でフォーカスが外れるケース対策
-                this.focus();
-            }, 10);
         });
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        applyPasswordHack('hack-input-url', 'text');
-        applyPasswordHack('hack-input-email', 'email');
-    });
-</script>
+    </script>
 
 </body>
 </html>
