@@ -1,99 +1,256 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>iOS Keyboard Test</title>
-<style>
-body {
-    font-family: sans-serif;
-    padding: 20px;
-}
-.section {
-    margin-bottom: 30px;
-}
-input {
-    width: 100%;
-    padding: 10px;
-    font-size: 16px;
-    box-sizing: border-box;
-}
-h2 {
-    margin-bottom: 5px;
-}
-</style>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<title>インターコムクラブ登録内容の変更 （メールアドレス 登録内容入力）</title>
+	
+	<style>
+		body { font-family: sans-serif; padding: 20px; background: #f5f5f5; color: #333; }
+		.Box1 { border: 1px solid #ccc; padding: 15px; background: #fff; margin-bottom: 15px; border-radius: 4px; }
+		.space05 { padding: 10px; margin-bottom: 5px; }
+		.background21 { background-color: #ffcccc !important; } /* エラー時の背景色 */
+		.errorList { color: red; font-weight: bold; }
+		.orangeBold { color: #ff6600; font-weight: bold; font-size: 0.9em; margin: 5px 0; }
+		.notesText { color: #666; font-size: 0.85em; margin: 5px 0; }
+		.buttonPrevNext ul { list-style: none; padding: 0; display: flex; gap: 10px; }
+		.button { display: inline-block; padding: 10px 20px; background: #0073e6; color: #fff; text-decoration: none; border-radius:4px; cursor: pointer;}
+		.button.levelLow { background: #aaa; }
+	</style>
+
+	<script src="https://code.jquery.com/jquery-1.8.3.min.js"></script>
+
+	<script type="text/javascript">
+	// ==========================================
+	// 8.txt (BhBase.js の一部、Form関連処理の再現)
+	// ==========================================
+	var BhBase = function() {};
+	BhBase.Form = {
+		clearEmMessage: function(){
+			var emAreaList = ["mail1_1EmArea", "mail1_2EmArea", "mail2_1EmArea", "mail2_2EmArea", "mail1BgEmArea", "mail2BgEmArea"];
+			var cnt = 0;
+			for( cnt = 0; cnt < emAreaList.length; cnt ++ ){
+				var selector = "#" + emAreaList[cnt];
+				$(selector).removeClass("background21");
+				$(selector + " .errorList").remove();
+			}
+		}
+	};
+
+	// ==========================================
+	// 9.txt (submit_mailjsflg の再現)
+	// ==========================================
+	function submit_mailjsflg( actId ) {
+		if( $( '#caption00:checked' ).val() ){
+			document.MainForm.email1jsflg.value = "1";
+		}else{
+			document.MainForm.email1jsflg.value = "0";
+		}
+
+		if( $( '#caption01:checked' ).val() ){
+			document.MainForm.email2jsflg.value = "1";
+		}else{
+			document.MainForm.email2jsflg.value = "0";
+		}
+
+		if (document.MainForm.email1jsflg.value == "0" && document.MainForm.email2jsflg.value != "1") {
+			if ( $( '#caption02:checked' ).val() !== undefined ) {
+				var $mail02DelImg = $('#caption02').attr('alt');
+				if ($mail02DelImg == "削除する") {
+					document.MainForm.email2jsflg.value ="2";
+				}
+			}
+		}
+		alert("次のアクションへ遷移します: " + actId + "\nemail1jsflg: " + document.MainForm.email1jsflg.value + "\nemail2jsflg: " + document.MainForm.email2jsflg.value);
+	}
+
+	function submitFunc( actId ){
+		submit_mailjsflg( actId );
+	}
+
+	// ==========================================
+	// CommonValidation のダミー（動作確認用）
+	// ==========================================
+	var CommonValidation = {
+		MailAdressCheck: function(option, isBlur) {
+			var val = $("#" + option.targetId).val();
+			if(!isBlur && val.length === 0) {
+				$("#" + option.emArea).append("<div class='errorList'>入力してください。</div>");
+				$("#" + option.bgEmArea).addClass("background21");
+				return false;
+			}
+			return true;
+		},
+		IsNotSameValue: function() { return true; },
+		IsSameValue: function(option, r1, r2, isBlur) {
+			var val1 = $("#" + option.targetId1).val();
+			var val2 = $("#" + option.targetId2).val();
+			if(!isBlur && val1 !== val2) {
+				$("#" + option.emArea2).append("<div class='errorList'>メールアドレスが一致しません。</div>");
+				$("#" + option.bgEmArea2).addClass("background21");
+				return false;
+			}
+			return true;
+		}
+	};
+
+	// ==========================================
+	// 3.txt (バリデーション及びボタン制御の処理)
+	// ==========================================
+	var jaac00013_04Validation = function(){};
+	jaac00013_04Validation.Fn = {
+		initialize : function() {
+			$("#submit").click(jaac00013_04Validation.Events.clickSubmit);
+			$("#email1_1, #email1_2").keyup(jaac00013_04Validation.Events.inputMail1);
+			$("#email2_1, #email2_2").keyup(jaac00013_04Validation.Events.inputMail2);
+		}
+	};
+	jaac00013_04Validation.Events = {
+		clickSubmit : function(){
+			BhBase.Form.clearEmMessage();
+			var result = true;
+			
+			if(!CommonValidation.MailAdressCheck({targetId:"email1_1", emArea:"mail1_1EmArea", bgEmArea:"mail1BgEmArea"}, false)) result = false;
+			if(!CommonValidation.MailAdressCheck({targetId:"email1_2", emArea:"mail1_2EmArea", bgEmArea:"mail1BgEmArea"}, false)) result = false;
+			if(!CommonValidation.IsSameValue({targetId1:"email1_1", targetId2:"email1_2", emArea2:"mail1_2EmArea", bgEmArea2:"mail1BgEmArea"}, true, true, false)) result = false;
+
+			if( result ){
+				submitFunc( "JAAC00014_04" );
+			}
+		},
+		inputMail1 : function() {},
+		inputMail2 : function() {}
+	};
+
+	// 各種初期化スクリプトの実行
+	jQuery(function($){
+		jaac00013_04Validation.Fn.initialize();
+	});
+	</script>
+
+	<script type="text/javascript">
+	jQuery(function($){
+		var pageId = $( 'input[name="_PAGEID"]' ).val();
+
+		$("#caption00").on("click", function() {
+			if($('#list00').css('display') != 'block'){
+				$("#list00").slideToggle("fast");
+				$( '.noEntryHide' ).hide();
+				$( '.Mail1Hide' ).show();
+			}
+			if($('#list01').css('display') == 'block') $("#list01").slideToggle("fast");
+			if($('#list02').css('display') == 'block') $("#list02").slideToggle("fast");
+		});
+
+		$("#caption01").on("click", function() {
+			if($('#list01').css('display') != 'block'){
+				$("#list01").slideToggle("fast");
+				$( '.noEntryHide' ).show();
+				if( $('#diffMail2').val().indexOf( '未登録' ) < 0 ){
+					$( '.Mail1Hide' ).hide();
+				}
+			}
+			if($('#list00').css('display') == 'block') $("#list00").slideToggle("fast");
+			if($('#list02').css('display') == 'block') $("#list02").slideToggle("fast");
+		});
+
+		$("#caption02").on("click", function() {
+			if($('#list02').css('display') != 'block'){
+				$("#list02").slideToggle("fast");
+				$( '.noEntryHide' ).hide();
+				$( '.Mail1Hide' ).show();
+			}
+			if($('#list00').css('display') == 'block') $("#list00").slideToggle("fast");
+			if($('#list01').css('display') == 'block') $("#list01").slideToggle("fast");
+		});
+	});
+	</script>
 </head>
 <body>
 
-<h1>iOS入力モード確認</h1>
+	<form method="POST" action="" name="MainForm" onSubmit="return false;" autocomplete="off" novalidate>
+		<input type="hidden" name="email1jsflg" value="0">
+		<input type="hidden" name="email2jsflg" value="0">
+		<input type="hidden" name="_PAGEID" value="JAAC00013">
+		<input type="hidden" name="isEntryMail2" value="true">
 
-<div class="section">
-    <h2>① type="text"</h2>
-    <input type="text" placeholder="text">
-</div>
+		<h2>現在のメールアドレス</h2>
+		<div class="Box1">
+			<p><strong>メールアドレス1:</strong> &lowast;&lowast;bt&lowast;&lowast;t0&lowast;&lowast;@test2.net</p>
+			<input id="diffMail1" type="hidden" value="&lowast;&lowast;bt&lowast;&lowast;t0&lowast;&lowast;@test2.net">
+			
+			<p><strong>メールアドレス2:</strong> &lowast;&lowast;bt&lowast;&lowast;t0&lowast;&lowast;@test.net</p>
+			<input id="diffMail2" type="hidden" value="&lowast;&lowast;bt&lowast;&lowast;t0&lowast;&lowast;@test.net">
+		</div>
 
-<div class="section">
-    <h2>② type="text" inputmode="email"</h2>
-    <input type="text" inputmode="email" placeholder="text + email">
-</div>
+		<h2>変更・削除の選択</h2>
+		<div class="Box1">
+			<div class="space05">
+				<input type="radio" name="house1" id="caption00" value="1">
+				<label for="caption00"><strong>メールアドレス1の変更</strong> (ここをクリックするとQWERTYの検証ができます)</label>
+				
+				<div id="list00" class="Box1" style="display:none; margin-top:10px;">
+					<p>新しいメールアドレス1</p>
+					<div id="mail1BgEmArea" class="space05">
+						<div id="mail1_1EmArea">
+							<p class="notesText">&lt;半角英数&gt;</p>
+							<input id="email1_1" type="text" maxlength="60" name="INEWEMAIL1" style="width:90%; padding:5px;" placeholder="入力例: username@jaccs.co.jp">
+						</div>
+						<div id="mail1_2EmArea" style="margin-top:10px;">
+							<p class="orangeBold">確認のためもう一度同じメールアドレスを入力してください。</p>
+							<input id="email1_2" type="text" maxlength="60" name="INEWEMAIL1CONFIRM" style="width:90%; padding:5px;" placeholder="入力例: username@jaccs.co.jp">
+						</div>
+					</div>
+				</div>
+			</div>
 
-<div class="section">
-    <h2>③ type="email"</h2>
-    <input type="email" placeholder="email">
-</div>
+			<div class="space05">
+				<input type="radio" name="house1" id="caption01" value="2">
+				<label for="caption01"><strong>メールアドレス2の変更</strong></label>
+				
+				<div id="list01" class="Box1" style="display:none; margin-top:10px;">
+					<p>新しいメールアドレス2</p>
+					<div id="mail2BgEmArea" class="space05">
+						<div id="mail2_1EmArea">
+							<p class="notesText">&lt;半角英数&gt;</p>
+							<input id="email2_1" type="text" maxlength="60" name="INEWEMAIL2" style="width:90%; padding:5px;" placeholder="入力例: username@jaccs.co.jp">
+						</div>
+						<div id="mail2_2EmArea" style="margin-top:10px;">
+							<p class="orangeBold">確認のためもう一度同じメールアドレスを入力してください。</p>
+							<input id="email2_2" type="text" maxlength="60" name="INEWEMAIL2CONFIRM" style="width:90%; padding:5px;" placeholder="入力例: username@jaccs.co.jp">
+						</div>
+					</div>
+				</div>
+			</div>
 
-<div class="section">
-    <h2>④ type="email" inputmode="email"</h2>
-    <input type="email" inputmode="email" placeholder="email + email">
-</div>
+			<div class="space05">
+				<input type="radio" name="house1" id="caption02" value="3" alt="削除する">
+				<label for="caption02"><strong>メールアドレス2の削除</strong></label>
+				
+				<div id="list02" class="Box1" style="display:none; margin-top:10px;">
+					<p class="orangeBold">メールアドレス2を削除します。</p>
+				</div>
+			</div>
+		</div>
 
-<div class="section">
-    <h2>⑤ type="text" inputmode="latin"</h2>
-    <input type="text" inputmode="latin" placeholder="latin">
-</div>
+		<h2>メール配信設定 (エリア開閉と連動して表示・非表示が切り替わります)</h2>
+		<div class="Box1">
+			<div class="Mail1Hide">
+				<p>【メール1用設定エリア】</p>
+				<input type="checkbox" id="chbxMail1" checked> <label for="chbxMail1">メールアドレス1にお知らせを配信する</label>
+			</div>
+			<div class="noEntryHide" style="margin-top:10px;">
+				<p>【メール2用設定エリア】</p>
+				<input type="checkbox" id="chbxMail2" checked> <label for="chbxMail2">メールアドレス2にお知らせを配信する</label>
+			</div>
+		</div>
 
-<div class="section">
-    <h2>⑥ type="text" inputmode="url"</h2>
-    <input type="text" inputmode="url" placeholder="url">
-</div>
-
-<div class="section">
-    <h2>⑦ type="password"</h2>
-    <input type="password" placeholder="password">
-</div>
-
-<div class="section">
-    <h2>⑧ type="password" → type="email"</h2>
-    <input id="hackInput" type="password" placeholder="password → email">
-    <button onclick="changeType()">type=emailへ変更</button>
-</div>
-
-<div class="section">
-    <h2>⑨ autocomplete=email</h2>
-    <input
-        type="text"
-        inputmode="email"
-        autocomplete="email"
-        placeholder="autocomplete=email">
-</div>
-
-<div class="section">
-    <h2>⑩ 推奨パターン</h2>
-    <input
-        type="email"
-        inputmode="email"
-        autocomplete="email"
-        autocapitalize="none"
-        autocorrect="off"
-        spellcheck="false"
-        placeholder="recommended">
-</div>
-
-<script>
-function changeType() {
-    document.getElementById("hackInput").type = "email";
-}
-</script>
+		<div class="buttonPrevNext">
+			<ul>
+				<li><a id="submit" class="button">確認画面へ</a></li>
+			</ul>
+		</div>
+	</form>
 
 </body>
 </html>
