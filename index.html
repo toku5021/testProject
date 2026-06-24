@@ -3,162 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QWERTY配列＆3大制御ハック 完全検証ページ</title>
+    <title>iOS Safari キーボードテスト</title>
     <style>
         body {
-            font-family: sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f5f5f7;
+            color: #1d1d1f;
             padding: 20px;
-            background-color: #f5f5f5;
+            margin: 0;
         }
-        .test-container {
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            max-width: 500px;
-            margin: 0 auto;
-        }
-        .input-group {
+        h1 {
+            font-size: 20px;
+            text-align: center;
             margin-bottom: 20px;
         }
-        label {
-            display: block;
+        .description {
+            font-size: 13px;
+            color: #86868b;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        .card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .card-title {
+            font-size: 14px;
             font-weight: bold;
-            margin-bottom: 8px;
-            color: #333;
+            margin-bottom: 4px;
+            color: #000000;
+        }
+        .card-subtitle {
+            font-size: 11px;
+            color: #0071e3;
+            font-family: monospace;
+            margin-bottom: 10px;
+        }
+        .card-desc {
+            font-size: 12px;
+            color: #515154;
+            margin-bottom: 12px;
+            line-height: 1.4;
         }
         input {
             width: 100%;
             padding: 12px;
-            font-size: 16px; /* iOSのズーム防止 */
-            border: 2px solid #ccc;
-            border-radius: 4px;
+            font-size: 16px; /* iOSの自動ズームを防ぐため16px以上に設定 */
+            border: 1px solid #d2d2d7;
+            border-radius: 8px;
             box-sizing: border-box;
-            transition: border-color 0.2s;
+            background-color: #fbfbfd;
+            -webkit-appearance: none;
         }
         input:focus {
-            border-color: #007bff;
             outline: none;
+            border-color: #0071e3;
+            background-color: #ffffff;
         }
-        .radio-group {
-            margin-bottom: 15px;
-            padding: 12px;
-            background: #e9ecef;
-            border-radius: 4px;
-        }
-        p.desc {
-            font-size: 13px;
-            color: #666;
-            margin-top: 5px;
-            line-height: 1.4;
-        }
-        .status-msg {
-            font-size: 12px;
-            color: #d32f2f;
-            font-weight: bold;
-            margin-top: 5px;
-            min-height: 18px;
+        footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 11px;
+            color: #86868b;
         }
     </style>
 </head>
 <body>
 
-    <div class="test-container">
-        <h2>QWERTY配列起動 ＆ 3大制御フォーム</h2>
-        
-        <p class="desc" style="background: #e3f2fd; padding: 10px; border-radius: 4px; color: #1565c0;">
-            <strong>【実験手順】</strong><br>
-            1. 別のアプリ（メモ帳など）で、キーボードを手動で一度<strong>「日本語かな（ひらがなフリック）」</strong>モードに切り替えておきます。<br>
-            2. 下のラジオボタンの文字をタップすると、隠れていた入力欄が出現し、0.1秒後に自動でフォーカス（選択状態）が当たります。
-        </p>
+    <h1>iOS Safari<br>キーボード初期表示テスト</h1>
+    <p class="description">各入力欄をタップして、スマホのキーボードが「QWERTY」になるか検証してください。</p>
 
-        <div class="radio-group">
-            <input type="radio" name="mail_hack_trigger" id="caption00_hack">
-            <label for="caption00_hack" style="display:inline; font-weight:normal; cursor:pointer;">
-                <strong>メールアドレス1の変更（ここをタップ）</strong>
-            </label>
-        </div>
-
-        <form method="POST" action="" name="MainForm" autocomplete="off" id="list00_hack" style="display: none;">
-            
-            <div class="input-group">
-                <label for="INEWEMAIL1">新しいメールアドレス（QWERTY起動用）</label>
-                
-                <input type="email" 
-                       id="INEWEMAIL1" 
-                       name="INEWEMAIL1" 
-                       inputmode="email" 
-                       autocomplete="email" 
-                       value="">
-                
-                <div id="replace_status" class="status-msg"></div>
-                
-                <p class="desc" style="margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 10px;">
-                    <strong>【このコードで動く3つの仕掛け】</strong><br>
-                    ・<strong>後出し表示＆時間差フォーカス</strong>：エリアが現れた直後にJSで枠を選択することで、スマホに「QWERTY（英語）配列」を強制的に読み直させます。<br>
-                    ・<strong>リアルタイム置換JS</strong>：万が一「日本語かな」のまま立ち上がって文字を打っても、全角やひらがなをその場で半角英数字に自動置換します。
-                </p>
-            </div>
-
-        </form>
+    <div class="card">
+        <div class="card-title">① 最も有力なQWERTY誘導 (URLモード)</div>
+        <div class="card-subtitle">inputmode="url" + 各種オフ</div>
+        <p class="card-desc">英字入力を最も強く誘発する属性です。自動修正や予測変換をオフにして日本語に引っ張られるのを防ぎます。</p>
+        <input type="text" inputmode="url" autocorrect="off" autocapitalize="none" autocomplete="off" placeholder="タップして確認">
     </div>
 
-    <script src="https://code.jquery.com/jquery-1.8.3.min.js"></script>
-    <script>
-    $(function() {
-        
-        // -------------------------------------------------------------
-        // 仕掛け②：ラジオボタン選択でエリアを表示し、時間差でフォーカスを当てるJS
-        // -------------------------------------------------------------
-        $('#caption00_hack').on('click', function() {
-            // 隠れていたフォームをスライド（またはパッと）表示
-            $('#list00_hack').show();
-            
-            // スマホのブラウザに「画面構造が変わった」と認識させ、
-            // 前回の日本語モードを忘れて type="email" をゼロから読み直させるため、
-            // あえて0.1秒（100ミリ秒）だけタイミングをずらして自動フォーカスさせます。
-            setTimeout(function() {
-                $('#INEWEMAIL1').focus();
-            }, 100);
-        });
+    <div class="card">
+        <div class="card-title">② メールアドレス形式</div>
+        <div class="card-subtitle">type="email"</div>
+        <p class="card-desc">iOSがシステム的に英字キーボード（@付きのQWERTY）を強制する設定です。</p>
+        <input type="email" autocorrect="off" autocapitalize="none" autocomplete="off" placeholder="example@domain.com">
+    </div>
 
-        // -------------------------------------------------------------
-        // 仕掛け③：ユーザーが全角・ひらがなで打ってきた文字をリアルタイムに半角にするJS
-        // -------------------------------------------------------------
-        $('#INEWEMAIL1').on('input', function(e) {
-            let value = e.target.value;
-            let statusArea = $('#replace_status');
-            
-            // 1. 全角英数字（ａ〜ｚ、Ａ〜Ｚ、０〜９）を半角に変換
-            let halfValue = value.replace(/[Ａ-Ｚａ-ｚ０-９]/g, function(s) {
-                return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
-            });
-            
-            // 2. メールアドレス用の全角記号を半角に置換
-            halfValue = halfValue.replace(/＠/g, '@')
-                                 .replace(/．/g, '.')
-                                 .replace(/＿/g, '_')
-                                 .replace(/ー/g, '-');
-            
-            // 3. メールアドレスに使えないひらがな・漢字を強制消去
-            let finalValue = halfValue.replace(/[^a-zA-Z0-9@._-]/g, '');
+    <div class="card">
+        <div class="card-title">③ パスワード形式（自動QWERTY）</div>
+        <div class="card-subtitle">type="password"</div>
+        <p class="card-desc">セキュリティ上、必ず英字QWERTYになりますが、入力文字が伏せ字（●）になります。</p>
+        <input type="password" placeholder="パスワード入力">
+    </div>
 
-            // 変換が行われた（文字が書き換わった）場合の処理
-            if (value !== finalValue) {
-                // 入力欄の中身を、JSの力で強制的に半角に書き換える
-                e.target.value = finalValue;
-                
-                // 画面に置換メッセージを表示
-                statusArea.text("【JS制御】全角入力をリアルタイムで半角英数に置換しました。");
-                
-                // 2秒後にメッセージを消去
-                setTimeout(function() {
-                    statusArea.empty();
-                }, 2000);
-            }
-        });
+    <div class="card">
+        <div class="card-title">④ 通常のテキスト＋各種オフ</div>
+        <div class="card-subtitle">type="text" + 各種オフ</div>
+        <p class="card-desc">inputmodeを指定せず、自動修正や大文字化だけをオフにしたパターンです（直前のキーボード環境に依存しやすい）。</p>
+        <input type="text" autocorrect="off" autocapitalize="none" autocomplete="off" placeholder="タップして確認">
+    </div>
 
-    });
-    </script>
+    <div class="card">
+        <div class="card-title">⑤ 比較用：標準のテキスト欄</div>
+        <div class="card-subtitle">type="text"（属性なし）</div>
+        <p class="card-desc">何も制御していない状態です。日本語環境であれば通常「かなキーボード（テンキー）」が表示されます。</p>
+        <input type="text" placeholder="通常のテキスト欄">
+    </div>
+
+    <footer>
+        <p>※iOSの仕様上、ユーザーが直前に使っていたキーボードが優先される場合があります。</p>
+    </footer>
+
 </body>
 </html>
