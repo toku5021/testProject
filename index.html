@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QWERTYキーボード起動テスト</title>
+    <title>スマホキーボード挙動テスト</title>
     <style>
         body {
             font-family: sans-serif;
@@ -23,19 +23,13 @@
             margin-bottom: 8px;
             color: #333;
         }
-        input[type="email"] {
+        input {
             width: 100%;
             padding: 10px;
-            font-size: 16px; /* iOSズーム防止 */
+            font-size: 16px; /* iOSの自動ズーム防止のため16px以上を推奨 */
             border: 1px solid #ccc;
             border-radius: 4px;
             box-sizing: border-box;
-        }
-        .radio-group {
-            margin-bottom: 10px;
-            padding: 10px;
-            background: #e9ecef;
-            border-radius: 4px;
         }
         p {
             font-size: 13px;
@@ -43,60 +37,30 @@
             margin-top: 5px;
             margin-bottom: 0;
         }
-        .note {
-            background-color: #e3f2fd;
-            padding: 10px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            font-size: 14px;
-        }
     </style>
 </head>
 <body>
 
-    <h1>QWERTYキーボード強制起動テスト</h1>
-    <div class="note">
-        <p><strong>【実験の手順】</strong></p>
-        他のアプリなどで、スマホのキーボードを一度<strong>「日本語かな（ひらがなフリック）」</strong>モードに切り替えてから、このページを試してください。
+    <h1>キーボード入力モード 検証ページ</h1>
+    <p style="margin-bottom: 20px; font-size: 14px;">各入力エリアをタップして、スマホの初期キーボードが「半角英数」になるか、「日本語（かな）」のままかを確認してください。</p>
+
+    <div class="test-box">
+        <label for="pattern1">1. type="text" ＋ プレースホルダあり</label>
+        <input type="text" id="pattern1" placeholder="入力例: username@jaccs.co.jp">
+        <p>※元々のコードのパターンです。placeholderの文字列をブラウザが解析して気を利かせるか検証します。</p>
     </div>
 
     <div class="test-box">
-        <label for="email_static">パターン1：最初から見えている入力欄</label>
-        <input type="email" id="email_static" inputmode="email">
-        <p>👉 <strong>解説</strong>：`type="email"` と `inputmode="email"` が入っていますが、最初から見えているため、スマホによっては前回の日本語入力（フリック）のまま開いてしまうことがあります。</p>
+        <label for="pattern2">2. inputmode="email" のみ指定（type="text"）</label>
+        <input type="text" id="pattern3" inputmode="latin">
+        <p>※プレースホルダは無し。キーボードの配列（@マークの有無）は変わるが、英語モードに強制されるか検証します。</p>
     </div>
 
     <div class="test-box">
-        <label>パターン2：後出し表示 ＋ 自動フォーカス</label>
-        
-        <div class="radio-group">
-            <input type="radio" name="mail_qwerty" id="btn_open">
-            <label for="btn_open" style="display:inline; font-weight:normal;">ここをタップして入力欄を開く</label>
-        </div>
-
-        <div id="dynamic_area" style="display: none; padding: 10px; border-top: 1px solid #ccc;">
-            <label for="email_dynamic">ここにQWERTYキーボードが開くか確認：</label>
-            <input type="email" id="email_dynamic" inputmode="email">
-        </div>
-        
-        <p>👉 <strong>解説</strong>：ラジオボタンを押した瞬間にエリアを出現させ、JSで時間差フォーカスを当てます。スマホに「前回の日本語かな」を忘れさせ、QWERTY（英語アルファベット）配列を強制的に引き出します。</p>
+        <label for="pattern3">3. type="url5" ＋ inputmode="email"（最強セット）</label>
+        <input type="text" id="pattern3" inputmode="email">
+        <p>※プレースホルダは無し。データの意味とキーボードの両方を指定。iOSが最も確実に「半角英数」で立ち上げるか検証します。</p>
     </div>
-
-    <script src="https://code.jquery.com/jquery-1.8.3.min.js"></script>
-    <script>
-    $(function(){
-        // ラジオボタンをクリックしたときの制御
-        $("#btn_open").on("click", function() {
-            // 1. 隠れていた入力エリアを表示
-            $("#dynamic_area").show();
-            
-            // 2. 0.1秒（100ミリ秒）後にJavaScriptで強制的にフォーカスを当てる
-            setTimeout(function() {
-                $("#email_dynamic").focus();
-            }, 100);
-        });
-    });
-    </script>
 
 </body>
 </html>
