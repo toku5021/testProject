@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>iOS キーボード制御（完全同期版）</title>
+    <title>iOS キーボード制御（構造完全再現版）</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -11,17 +11,22 @@
             padding: 20px;
             color: #1d1d1f;
         }
-        h1 { font-size: 18px; text-align: center; }
-        .card {
+        .caption01 { font-size: 16px; font-weight: bold; margin-bottom: 15px; }
+        .Box1 {
             background: #ffffff;
             border-radius: 12px;
             padding: 16px;
             margin-bottom: 16px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
-        .label { font-size: 14px; font-weight: bold; margin-bottom: 5px; }
-        .sub-label { font-size: 11px; color: #86868b; margin-bottom: 10px; }
-        input {
+        .caption02 { font-size: 14px; font-weight: bold; margin: 0 0 10px 0; }
+        .radio-line { display: flex; align-items: center; margin-bottom: 10px; }
+        .radio-line input { width: auto; margin-right: 8px; }
+        .radio-line label { font-size: 14px; font-weight: bold; cursor: pointer; }
+        
+        /* 本番(aaa.txt)のスタイル構造を再現 */
+        .text05 { font-size: 12px; color: #86868b; margin: 0 0 5px 0; }
+        .text06 input {
             width: 100%;
             padding: 12px;
             font-size: 16px;
@@ -29,75 +34,52 @@
             border-radius: 8px;
             box-sizing: border-box;
             background-color: #fbfbfd;
+            -webkit-appearance: none;
         }
-        input:focus { outline: none; border-color: #0071e3; background-color: #ffffff; }
-        
-        /* 激しく書き換えられる本番同様のエラーエリア */
-        .txta01 {
-            margin-top: 5px;
-        }
-        .errorList {
-            font-size: 12px;
-            color: #ff3b30;
-            background-color: #fff0f0;
-            padding: 5px;
-            border-radius: 4px;
-            margin-top: 5px;
-        }
+        .text06 input:focus { outline: none; border-color: #0071e3; background-color: #ffffff; }
     </style>
     <script src="https://code.jquery.com/jquery-1.8.3.min.js"></script>
 </head>
 <body>
 
-    <h1>iOS キーボード完全同期テスト</h1>
-    <button style="display:block; width:100%; padding:12px; background:#0071e3; color:white; border:none; border-radius:8px; font-size:14px; font-weight:bold; margin-bottom:20px;" onclick="location.reload()">ページを再読み込み</button>
+    <h2 class="caption01">登録内容入力</h2>
+    
+    <div class="Box1">
+        <p class="caption02">変更・削除</p>
+        
+        <div class="radio-line">
+            <input type="radio" name="house1" id="caption00" value="1">
+            <label for="caption00">メールアドレス1の変更</label>
+        </div>
 
-    <div class="card">
-        <div class="label">新しいメールアドレス1</div>
-        <div class="sub-label">&lt;半角英数&gt;</div>
-        <div id="mail1BgEmArea" class="txta01">
-            <div id="mail1_1EmArea">
-                <input id="email1_1" type="text" maxlength="60" name="INEWEMAIL1" inputmode="email"
-                       autocorrect="off" autocapitalize="none" autocomplete="off" 
-                       placeholder="入力例: username@jaccs.co.jp">
+        <div id="list00" class="Box1" style="display:none; border:1px solid #d2d2d7; margin-top:10px;">
+            <p class="caption02">新しいメールアドレス1</p>
+            <div id="mail1BgEmArea" class="space01">
+                <div id="mail1_1EmArea" class="space05">
+                    <p class="text05">&lt;半角英数&gt;</p>
+                    <p class="text06">
+                        <input id="email1_1" type="text" maxlength="60"
+                               name="INEWEMAIL1" class="formText1"
+                               value="" inputmode="email"
+                               autocorrect="off" autocapitalize="none" autocomplete="off"
+                               placeholder="入力例: username@jaccs.co.jp">
+                    </p>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="card">
-        <div class="label">比較用：通常のテキスト欄</div>
-        <div class="sub-label">制御なし（かなボードが引き継がれます）</div>
-        <input type="text" placeholder="通常のテキスト欄">
-    </div>
-
     <script>
         jQuery(function($){
-            
             /**
-             * 本番の 3.txt (1395行目) および 4.txt のバリデーションによる
-             * 高速な「DOM追加・削除」の負荷を完全に再現する関数
+             * 本番の 2.txt (1384行目) のエリア開閉機能を完全再現
+             * ラジオボタンが押されたら、スライドアニメーションで入力欄を「動的出現」させる
              */
-            function executeHeavyValidationMock() {
-                // 1. 古いメッセージを一斉に削除する処理（4.txt の removeErrorMessage 相当）
-                $("#mail1_1EmArea .errorList").remove();
-                $("#mail1BgEmArea").removeClass("background21");
-
-                // 2. ミリ秒単位で「エラー検知➔追加➔即クリア」の波を発生させ、iOS Safariのキャッシュを揺さぶる
-                // この一瞬のDOMの乱れが、iOSの「キーボード記憶」を強制リセットさせます
-                var dummyError = '<div class="errorList" style="position:absolute; opacity:0; pointer-events:none;"><p>dummy</p></div>';
-                $("#mail1_1EmArea").append(dummyError);
-                
-                setTimeout(function() {
-                    $("#mail1_1EmArea .errorList").remove();
-                }, 5);
-            }
-
-            // 本番（3.txtの1395行目）のイベントバインドを完全再現
-            // keyup（文字入力の瞬間）と blur に加え、フォーカスした瞬間にも走らせてQWERTYを固定します
-            $("#email1_1").on("focus keyup blur", function(e) {
-                executeHeavyValidationMock();
+            $("#caption00").on("click", function() {
+                if($('#list00').css('display') != 'block'){
+                    $("#list00").slideToggle("fast");
+                }
             });
-
         });
     </script>
 
