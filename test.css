@@ -1,14 +1,8 @@
 @charset "utf-8";
 
-/* =========================================================================
- * property='iemail' 属性を持つ入力欄専用の保険CSS
- * =========================================================================
- * 万が一ブラウザの仕様変更により、JavaScriptの戻し処理（emailへの再変更）が
- * 途中でブロックされ password 状態のままフリーズしてしまっても、
- * 文字が黒丸（●）にならないように可視化状態（伏字なし）を強制維持します。
- */
+/* name属性が IEMAIL の入力欄に適用 */
 input[name="IEMAIL"] {
     -webkit-text-security: none !important;
     text-security: none !important;
-    background-color: #e0f7fa; /* テスト確認用：背景を薄い水色にする */
+    background-color: #ffebee !important; /* テスト確認用：薄いピンク色 */
 }
