@@ -1,76 +1,69 @@
 /**
- * 機能名  ：メールアドレス入力欄 QWERTY（email版）強制起動機能
- * 機能概要：
- * name='IEMAIL' を持つ入力欄にフォーカスされた際、
- * 一瞬だけ type=password を経由してキーボード状態のリフレッシュを試みる。
- *
- * 設計方針：
- * - password状態でユーザー入力させないことを最優先
- * - タイマー(setTimeout)に依存しない
- * - ハックが効かなくなっても通常のemail入力は保証する
- * - 例外発生時も必ずemailへ戻す
- */
-document.addEventListener('DOMContentLoaded', function () {
+ * 機能名  ：メールアドレス入力欄 QWERTY（email版）強制起動機能
+ * 機能概要 ：name='IEMAIL' を持つ要素のタップ（クリック）時に、
+ * 一瞬だけ異なるtypeを高速で切り替えることにより、
+ * 直前のかな入力の記憶を完全にクリアして「メール用のQWERTY」を強制します。
+ */
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // タップ・クリックされた瞬間（フォーカスが当たる直前）をキャッチ
+    // スマホ対応のため touchstart、PCでの検証用に mousedown を両方セット
+    var triggerEvents = ['touchstart', 'mousedown'];
 
-    document.addEventListener('focus', function (event) {
+    triggerEvents.forEach(function(eventType) {
+        document.addEventListener(eventType, function(event) {
+            var target = event.target;
 
-        var target = event.target;
+            // 対象の入力欄かつ、name='IEMAIL' を持っているかチェック（大文字に修正）
+            if (!target || target.tagName !== 'INPUT' || target.getAttribute('name') !== 'IEMAIL') {
+                return;
+            }
 
-        // 対象チェック
-        if (
-            !target ||
-            target.tagName !== 'INPUT' ||
-            target.getAttribute('name') !== 'IEMAIL'
-        ) {
-            return;
-        }
+            // すでに文字が入っている、または処理中の場合はスキップ
+            if ((target.value && target.value.length > 0) || target.getAttribute('data-switching') === 'true') {
+                return;
+            }
 
-        // 入力済みの場合は何もしない
-        if (target.value && target.value.length > 0) {
-            return;
-        }
+            // 最初の切り替え処理全体をガード
+            try {
+                target.setAttribute('data-switching', 'true');
 
-        // 再入防止
-        if (target.getAttribute('data-switching') === 'true') {
-            return;
-        }
+                // --- 【最重要トリック】 ---
+                // スマホのキーボードエンジンに「完全に新しい未知の入力形式が来た」と錯覚させる
+                target.type = 'password';
+                target.inputmode = 'numeric';
 
-        try {
-            target.setAttribute('data-switching', 'true');
+            } catch (error) {
+                console.error("First hack phase error:", error);
+                // 万が一ここでエラーが起きたら即座に安全な設定へ退避
+                target.type = 'email';
+                target.inputmode = 'email';
+                target.setAttribute('data-switching', 'false');
+                return; // タイマーに進まず終了
+            }
 
-            // 現在状態を明示
-            target.type = 'email';
-            target.inputMode = 'email';
+            // 10ミリ秒（ブラウザが画面を描画する前の極小時間）だけ待つ
+            setTimeout(function() {
+                // 10ミリ秒後の書き戻し処理をガード
+                try {
+                    // 本命の『email』用のキーボード設定に書き戻す
+                    target.type = 'email';
+                    target.inputmode = 'email';
+                    
+                    // 完全にリフレッシュされた状態でフォーカスを当て、email用のQWERTYを呼び出す
+                    target.focus();
 
-            // キーボードリフレッシュ試行
-            target.type = 'password';
-
-        } catch (error) {
-
-            console.error('Keyboard hack failed:', error);
-
-        } finally {
-
-            // 何が起きてもemailへ戻す
-            try {
-                target.type = 'email';
-                target.inputMode = 'email';
-            } catch (restoreError) {
-                console.error('Restore failed:', restoreError);
-            }
-
-            // フォーカス維持
-            try {
-                if (document.contains(target)) {
-                    target.focus();
-                }
-            } catch (focusError) {
-                console.error('Focus restore failed:', focusError);
-            }
-
-            target.setAttribute('data-switching', 'false');
-        }
-
-    }, true);
-
+                } catch (timeoutError) {
+                    console.error("Timeout phase error:", timeoutError);
+                    // ここでエラーが起きても強制的に戻す
+                    target.type = 'email';
+                    target.inputmode = 'email';
+                } finally {
+                    // 【最重要】何が起きても、最後の「リセットスイッチ」だけは絶対に強制実行する
+                    target.setAttribute('data-switching', 'false');
+                }
+            }, 10);
+            
+        }, true);
+    });
 });
