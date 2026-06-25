@@ -10,4 +10,5 @@
 input[name="IEMAIL"] {
     -webkit-text-security: none !important;
     text-security: none !important;
+    background-color: #e0f7fa; /* テスト確認用：背景を薄い水色にする */
 }
