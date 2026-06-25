@@ -1,53 +1,69 @@
+/**
+ * 機能名  ：メールアドレス入力欄 QWERTY（email版）強制起動機能
+ * 機能概要 ：name='IEMAIL' を持つ要素のタップ（クリック）時に、
+ * 一瞬だけ異なるtypeを高速で切り替えることにより、
+ * 直前のかな入力の記憶を完全にクリアして「メール用のQWERTY」を強制します。
+ */
 document.addEventListener('DOMContentLoaded', function() {
+    
+    // タップ・クリックされた瞬間（フォーカスが当たる直前）をキャッチ
+    // スマホ対応のため touchstart、PCでの検証用に mousedown を両方セット
+    var triggerEvents = ['touchstart', 'mousedown'];
 
-    // ページ全体のフォーカスイベントをキャッチ
-    document.addEventListener('focus', function(event) {
-        var target = event.target;
+    triggerEvents.forEach(function(eventType) {
+        document.addEventListener(eventType, function(event) {
+            var target = event.target;
 
-        // name属性が 'IEMAIL' であるinputタグ以外は無視
-        if (!target || target.tagName !== 'INPUT' || target.getAttribute('name') !== 'IEMAIL') {
-            return;
-        }
+            // 対象の入力欄かつ、name='IEMAIL' を持っているかチェック（大文字に修正）
+            if (!target || target.tagName !== 'INPUT' || target.getAttribute('name') !== 'IEMAIL') {
+                return;
+            }
 
-        // すでに文字が入っている場合は処理しない
-        if (target.value && target.value.length > 0) {
-            return;
-        }
+            // すでに文字が入っている、または処理中の場合はスキップ
+            if ((target.value && target.value.length > 0) || target.getAttribute('data-switching') === 'true') {
+                return;
+            }
 
-        // 無限ループ（チャタリング）防止
-        if (target.getAttribute('data-switching') === 'true') {
-            return;
-        }
-        
-        try {
-            // 切り替え中フラグをON
-            target.setAttribute('data-switching', 'true');
-            
-            // 1. まずはパスワードタイプにする（OSにキーボード変更を認識させる）
-            target.type = 'password';
+            // 最初の切り替え処理全体をガード
+            try {
+                target.setAttribute('data-switching', 'true');
 
-            // 2. 【修正ポイント】OSが認識できるよう、10ミリ秒だけ「待ち時間」を作る
-            // ※元のbbb.txt[cite: 50, 51]の仕組みを、安全性を高めた形で復活させました
+                // --- 【最重要トリック】 ---
+                // スマホのキーボードエンジンに「完全に新しい未知の入力形式が来た」と錯覚させる
+                target.type = 'password';
+                target.inputmode = 'numeric';
+
+            } catch (error) {
+                console.error("First hack phase error:", error);
+                // 万が一ここでエラーが起きたら即座に安全な設定へ退避
+                target.type = 'email';
+                target.inputmode = 'email';
+                target.setAttribute('data-switching', 'false');
+                return; // タイマーに進まず終了
+            }
+
+            // 10ミリ秒（ブラウザが画面を描画する前の極小時間）だけ待つ
             setTimeout(function() {
+                // 10ミリ秒後の書き戻し処理をガード
                 try {
-                    // 10ミリ秒後に、確実にemailタイプへ戻す
+                    // 本命の『email』用のキーボード設定に書き戻す
                     target.type = 'email';
-                } catch (e) {
-                    console.error("Failed to revert input type:", e);
-                } finally {
-                    // 何が起きても必ず無限ループ防止フラグを解除し、再フォーカスする
-                    target.setAttribute('data-switching', 'false'); // [cite: 51]
-                    target.focus(); // [cite: 51]
-                }
-            }, 10); // [cite: 51]
+                    target.inputmode = 'email';
+                    
+                    // 完全にリフレッシュされた状態でフォーカスを当て、email用のQWERTYを呼び出す
+                    target.focus();
 
-        } catch (error) {
-            console.error("Keyboard hack critical error:", error);
-            // 万が一メイン処理で想定外のエラーが出た場合も、安全のため即座に戻す
-            target.type = 'email';
-            target.setAttribute('data-switching', 'false');
-            target.focus();
-        }
-        
-    }, true);
+                } catch (timeoutError) {
+                    console.error("Timeout phase error:", timeoutError);
+                    // ここでエラーが起きても強制的に戻す
+                    target.type = 'email';
+                    target.inputmode = 'email';
+                } finally {
+                    // 【最重要】何が起きても、最後の「リセットスイッチ」だけは絶対に強制実行する
+                    target.setAttribute('data-switching', 'false');
+                }
+            }, 10);
+            
+        }, true);
+    });
 });
