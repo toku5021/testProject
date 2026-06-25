@@ -7,7 +7,7 @@
  * 途中でブロックされ password 状態のままフリーズしてしまっても、
  * 文字が黒丸（●）にならないように可視化状態（伏字なし）を強制維持します。
  */
-input[property="iemail"] {
+input[name="IEMAIL"] {
     -webkit-text-security: none !important;
     text-security: none !important;
 }

@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
             var target = event.target;
 
             // 対象の入力欄かつ、property='iemail' を持っているかチェック
-            if (!target || target.tagName !== 'INPUT' || target.getAttribute('property') !== 'iemail') {
+            if (!target || target.tagName !== 'INPUT' || target.getAttribute('name') !== 'IEMAIL') {
                 return;
             }
 

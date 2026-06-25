@@ -1,30 +1,597 @@
-<!doctype html>
-<html lang="ja">
-<head>
-	<meta charset="shift_jis">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-	<title>インターコムクラブ登録内容の変更 | ジャックス</title>
-	
-	<link href="./test.css" rel="stylesheet" type="text/css">
-	<script src="./test.js" type="text/javascript"></script>
-</head>
-<body>
 
-	<form method="POST" action="" name="MainForm" autocomplete="off" novalidate> <div class="Box1">
-			<p class="caption02">新しいメールアドレス1</p> <input 
-				id="email1_1" 
-				type="email" 
-				property="iemail" 
-				maxlength="60"
-				name="INEWEMAIL1" 
-				class="formText1"
-				value=""
-				autocorrect="off"
-				autocapitalize="none"
-				autocomplete="off"
-				placeholder="入力例: username@jaccs.co.jp"> </div>
 
-	</form>
 
-</body>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+	"http://www.w3.org/TR/html4/loose.dtd">
+
+
+
+
+<!-- CASH:OFF -->
+
+<html>
+
+	<head>
+		<title>会員登録　カード番号・メールアドレス入力 | ジャックス インターコムクラブ</title>
+		
+		<script type="text/javascript" src="https://reg2-w3.jaccs.co.jp/public/cf179484ec18d44201f467da1de3bc645dd2735bf77a"  ></script><script language="JavaScript">
+		<!--
+		function doTransaction(trxID) {
+  doTransaction(trxID, null, false, null, null, null, null);
+  return false;
+}
+function doTransaction2(trxID, c) {
+  doTransaction(trxID, null, c, null, null, null, null);
+}
+function doTransaction3(trxID, c, f, tf) {
+  doTransaction(trxID, null, c, f, tf, null, null);
+}
+function doTransactionForFrame(trxID, c, f, tf) {
+  doTransaction(trxID, null, c, f, tf, null, null);
+}
+function doTransactionForWin(trxID, c, tw) {
+  doTransaction(trxID, null, c, null, null, tw, null);
+}
+function doTransactionForWin2(trxID, c, tw, opt) {
+  doTransaction(trxID, null, c, null, null, tw, opt);
+}
+function doTransactionForWin3(trxID, c, tf, tw) {
+  doTransaction(trxID, null, c, null, tf, tw, null);
+}
+function doTransactionForWindow(trxID, c, tw, opt) {
+  doTransaction(trxID, null, c, null, null, tw, opt); 
+}
+function doSubTransaction(trxID, target) {
+  doTransaction(trxID, target, false, null, null, null, null);
+}
+function doTransaction(trxID, subID, c, f, tf, tw, opt) {
+  if ((c && !confirm(msg)) || !check()) { return; }
+  t = self.name;
+  if (null == subID) { subID = ''; }
+  if (null == f)  { f = self; }
+  if (null == tw) {
+    tw = '';
+  } else {
+    if (tw.length == 0) { tw = '_NOTARGETWINID'; }
+    t = tw;
+  }
+  if (null == tf) { tf = f.name; } else { t = tf; }
+  mForm = f.document.MainForm;
+  mForm._TRANID.value = trxID;
+  mForm._SUBINDEX.value = subID;
+  mForm._FRAMID.value = f.name;
+  mForm._TARGET.value = tf;
+  mForm._TARGETWINID.value = tw;
+  if (opt) { window.open('', tw, opt); }
+  mForm.target = t;
+  mForm.submit();
+}
+var isTrx      = 0;
+var delayTime  = 5000;
+function check() {
+  if (isTrx == 1) { return false; }
+  isTrx = 1;
+  setTimeout('isTrx = 0;', delayTime);
+  return true;
+}
+function doTransaction2Click(trxID, subID, c, f, tf, tw, opt, defTime) {
+  if ((c && !confirm(msg)) || !check2(defTime)) { return; }
+  t = self.name;
+  if (null == subID) { subID = ''; }
+  if (null == f)  { f = self; }
+  if (null == tw) {
+    tw = '';
+  } else {
+    if (tw.length == 0) { tw = '_NOTARGETWINID'; }
+    t = tw;
+  }
+  if (null == tf) { tf = f.name; } else { t = tf; }
+  mForm = f.document.MainForm;
+  mForm._TRANID.value = trxID;
+  mForm._SUBINDEX.value = subID;
+  mForm._FRAMID.value = f.name;
+  mForm._TARGET.value = tf;
+  mForm._TARGETWINID.value = tw;
+  if (opt) { window.open('', tw, opt); }
+  mForm.target = t;
+  mForm.submit();
+}
+var isTrx2      = 0;
+function check2(defTime) {
+  if (isTrx2 == 1) { return false; }
+  isTrx2 = 1;
+  setTimeout('isTrx2 = 0;', defTime);
+  return true;
+}
+var msg = '処理を実行します よろしいですか？';
+
+		//-->
+		</script>
+		<script type="text/javascript" src="/asset/js/jquery.js?ver=20131114"></script>
+		<script type="text/javascript" src="/asset/js/validation.js?ver=20240311"></script>
+		<script type="text/javascript" src="/asset/js/validation-config.js?ver=20240311"></script>	
+		<script type="text/javascript" src="/asset/js/email_InputModeControll.js?ver=20260624"></script>
+		<meta http-equiv="Content-Type" content="text/html; charset=shift_jis" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width,initial-scale=1" />
+		<meta name="description" content="ジャックスカード会員様の専用サイト、インターコムクラブの会員登録が行えます。登録いただくと、ご利用代金明細やポイントの照会、キャンペーンエントリー、各種サービスのお申し込みなど、さまざまなサービスを24時間365日インターネットからご利用いただけます。" />
+		<meta name="keywords" content="ジャックス,インターコムクラブ,会員登録,クレジットカード,ご利用代金明細書,ラブリィポイント照会,登録内容の変更,お支払い方法の変更,各種サービス,キャンペーンエントリー,ネットキャッシング" />
+		<meta name="copyright" content="Copyright (c) JACCS Co., Ltd. All Rights Reserved." />
+		<link rel="shortcut icon" href="/asset/images/favicon.ico" />
+		<link type="text/css" rel="stylesheet" href="/asset/css/cssreset-min.css?ver=20131114" media="screen,print" />
+		<link type="text/css" rel="stylesheet" href="/asset/css/cssfonts-min.css?ver=20131114" media="screen,print" />
+		<link type="text/css" rel="stylesheet" href="/asset/css/common.css?ver=20240515" media="screen,print" />
+		<link type="text/css" rel="stylesheet" href="/asset/css/style.css?ver=20201211" media="screen,print" />
+		<link type="text/css" rel="stylesheet" href="/asset/css/print.css?ver=20131114" media="print" />
+		<link type="text/css" rel="stylesheet" href="/asset/css/email_InputModeControll.css?ver=20260624" media="screen,print" />
+		<script>
+document.addEventListener("DOMContentLoaded", function() {
+var pageid = "";
+var pageele = document.getElementById("PAGEID");
+if (document.MainForm && document.MainForm._PAGEID) {
+  pageid = document.MainForm._PAGEID.value;
+} else if (pageele){
+  pageid = pageele.value;
+}
+window.dataLayer = window.dataLayer || [];
+var gaurl = location.href.split("?")[0].split("#")[0];
+window.dataLayer.push({
+'event': 'virtual_pv',
+'page_location': gaurl + '/' + pageid
+});
+});
+</script>
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-5KKPXVN');</script>
+<!-- End Google Tag Manager -->
+
+	</head>
+
+	<body class="rwd">
+	    <!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5KKPXVN"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+		<form method="POST" action="/Service" name="MainForm" onSubmit="return false;">
+		<noscript><input type="hidden" name="_TRANID" value="JXXC_TransactionDispatcher" /></noscript>
+		<input type="hidden" name="HCHECK" value="" maxLength='1' />
+		<input type="hidden" name="HKEYLABEL" value="" maxLength='8' />
+		<input type="hidden" name="_PAGEID" value="JARE00002" /><input type="hidden" name="_SENDTS" value="1782354848515" /><input type="hidden" name="_TRANID" /><input type="hidden" name="_SUBINDEX" /><input type="hidden" name="_TARGET" /><input type="hidden" name="_FRAMID" /><input type="hidden" name="_TARGETWINID" /><input type="hidden" name="_LUID" value="1782354838561" /><input type="hidden" name="_WINID" value="root" />
+		
+		<script language="JavaScript">
+		<!--
+		var timer = false;
+		$('form').focusout(function(){
+			if(timer !== false){
+				clearTimeout(timer);
+			}
+			timer = setTimeout(function(){
+					
+				var reqCount = $('.required_count').length;
+				
+				if(reqCount == 5){
+					$('.floating-status')
+					.find('.status-change')
+					.attr('src', '/asset/images/img_reg_step0.png');
+				}else if(reqCount == 4){
+					$('.floating-status')
+					.find('.status-change')
+					.attr('src', '/asset/images/img_reg_step20.png');
+				}else if(reqCount == 3){
+					$('.floating-status')
+					.find('.status-change')
+					.attr('src', '/asset/images/img_reg_step40.png');
+				}else if(reqCount == 2){
+					$('.floating-status')
+					.find('.status-change')
+					.attr('src', '/asset/images/img_reg_step60.png');
+				}else if(reqCount == 1){
+					$('.floating-status')
+					.find('.status-change')
+					.attr('src', '/asset/images/img_reg_step80.png');
+				}else if(reqCount == 0){
+					$('.floating-status')
+					.find('.status-change')
+					.attr('src', '/asset/images/img_reg_step100.png');
+				}
+			},200);
+		});
+		
+		var timer = false;
+		$(window).load(function(){
+			if(timer !== false){
+				clearTimeout(timer);
+			}
+			timer = setTimeout(function(){
+					
+				var reqCount = $('.required_count').length;
+				
+				if(reqCount == 5){
+					$('.floating-status')
+					.find('.status-change')
+					.attr('src', '/asset/images/img_reg_step0.png');
+				}else if(reqCount == 4){
+					$('.floating-status')
+					.find('.status-change')
+					.attr('src', '/asset/images/img_reg_step20.png');
+				}else if(reqCount == 3){
+					$('.floating-status')
+					.find('.status-change')
+					.attr('src', '/asset/images/img_reg_step40.png');
+				}else if(reqCount == 2){
+					$('.floating-status')
+					.find('.status-change')
+					.attr('src', '/asset/images/img_reg_step60.png');
+				}else if(reqCount == 1){
+					$('.floating-status')
+					.find('.status-change')
+					.attr('src', '/asset/images/img_reg_step80.png');
+				}else if(reqCount == 0){
+					$('.floating-status')
+					.find('.status-change')
+					.attr('src', '/asset/images/img_reg_step100.png');
+				}
+			},200);
+		});	
+		//-->
+		</script>
+		
+		<div class="floating-status">
+		<img class="status-change" src="" alt="入力状況" />
+		</div>
+		
+		<a href="#" id="page-top">&nbsp;</a><div id="wrapper">
+		<div id="header">
+		<p id="left-header-corplogo"><img src="/asset/images/logo-header.gif" width="115" height="35" alt="JACCS" /></p>
+		<!-- / #header --></div>
+		
+		<div class="main-title">
+		<strong>お客様情報入力</strong>
+		</div>
+		
+		<div id="contents">
+		<div class="one-colum">
+		<div class="center-section pb0">
+		
+			
+		
+		<div class="instruct-message-item">
+		<p>入力いただいたメールアドレスに、会員登録用URLを記載したメールをお送りします。</p>
+		<p><font color="red">24時間以内に、メールに記載されているURLをクリックして、インターコムクラブにログインしてください。</font></p>
+		<p><font color="red">ログインをもって、会員登録完了となります。</font></p>
+		<!-- / .instruct-message-item --></div>
+		<ul class="attention-list">
+		<li>※当社より送信するメールのドメインは「jaccs.co.jp」です。メールが届かない場合は迷惑メールフォルダをご確認ください。</li>
+		<li>※2枚以上カードをお持ちの方はいずれか1枚のカード番号を入力してください。会員登録完了後、インターコムクラブにログインいただくと、追加カードの登録ができます。</li>
+		</ul>
+		<!-- / .center-section --></div>
+		
+			<div class="center-section">
+			<div class="three-column-table">
+			<table class="vertical-input-table wrap-validate-input-card-or-cust">
+				<tr class="pb0">
+					<th rowspan="3">
+						<div>
+						<span class="cell-txt-left"><strong>カード番号またはお客様番号</strong></span>
+						<p class="required-mk"><img width="43" height="16" src="/asset/images/icon-required-red.png" alt="必須" /></p>
+						</div>
+					</th>
+					<td class="wrap-validate-input-card-or-cust-group-01 required_count required_area">
+						<p>16ケタのカード番号のお客様</p> 
+						<input type="text" name="ICARDNUM16DIGIT1" value="" class='four-colum-input validate-s16-card-no1 ime_mode_disabled required-color' maxLength='4' inputmode='numeric' pattern='\d*' />&nbsp;―<!-- STEP1-20120823 -->
+						<input type="text" name="ICARDNUM16DIGIT2" value="" class='four-colum-input validate-s16-card-no2 ime_mode_disabled required-color' maxLength='4' inputmode='numeric' pattern='\d*' />&nbsp;―<!-- STEP1-20120823 -->
+						<input type="text" name="ICARDNUM16DIGIT3" value="" class='four-colum-input validate-s16-card-no3 ime_mode_disabled required-color' maxLength='4' inputmode='numeric' pattern='\d*' />&nbsp;―<!-- STEP1-20120823 -->
+						<input type="text" name="ICARDNUM16DIGIT4" value="" class='four-colum-input validate-s16-card-no4 ime_mode_disabled required-color' maxLength='4' inputmode='numeric' pattern='\d*' /><!-- STEP1-20120823 -->
+					</td>
+					
+					
+					<td class="error-message-area">
+					</td>
+					
+					
+				</tr>
+				<tr class="pt0 pb0">
+					<td class="wrap-validate-input-card-or-cust-group-02 required_area">
+						<p>14ケタのカード番号のお客様</p> 
+						<input type="text" name="ICARDNUM14DIGIT1" value="" class='s14-card-no1 validate-s14-card-no1 ime_mode_disabled required-color' maxLength='3' inputmode='numeric' pattern='\d*' />&nbsp;―<!-- STEP1-20120823 -->
+						<input type="text" name="ICARDNUM14DIGIT2" value="" class='s14-card-no2 validate-s14-card-no2 ime_mode_disabled required-color' maxLength='4' inputmode='numeric' pattern='\d*' />&nbsp;―<!-- STEP1-20120823 -->
+						<input type="text" name="ICARDNUM14DIGIT3" value="" class='s14-card-no3 validate-s14-card-no3 ime_mode_disabled required-color' maxLength='5' inputmode='numeric' pattern='\d*' />&nbsp;―<!-- STEP1-20120823 -->
+						<input type="text" name="ICARDNUM14DIGIT4" value="" class='s14-card-no4 validate-s14-card-no4 ime_mode_disabled required-color' maxLength='2' inputmode='numeric' pattern='\d*' /><!-- STEP1-20120823 -->
+					</td>
+					
+					
+					<td class="error-message-area">
+					</td>
+					
+
+				</tr>
+
+                <tr class="pt0">
+                    <td class="wrap-validate-input-card-or-cust-group-03 required_area">
+                        <p>12ケタのお客様番号</p> 
+                        <input type="text" name="ICUSTNUM_1" value="" class='cust-no1 validate-cust-no1 ime_mode_disabled required-color' maxLength='2' inputmode='numeric' pattern='\d*' />&nbsp;―
+                        <input type="text" name="ICUSTNUM_2" value="" class='cust-no2 validate-cust-no2 ime_mode_disabled required-color' maxLength='5' inputmode='numeric' pattern='\d*' />&nbsp;―
+                        <input type="text" name="ICUSTNUM_3" value="" class='cust-no2 validate-cust-no3 ime_mode_disabled required-color' maxLength='5' inputmode='numeric' pattern='\d*' />
+                        <p>※12ケタのお客様番号による登録は、一部カードのみとなります。</p>
+                    </td>
+                    
+                    
+                    <td class="error-message-area">
+                    </td>
+                    
+                </tr>
+
+
+				<tr>
+					<th>
+						<span class="cell-txt-left"><strong>生年月日</strong></span>
+						<p class="required-mk"><img width="43" height="16" src="/asset/images/icon-required-red.png" alt="必須" /></p>
+					</th>
+					<td class="birth-date required_count required_area">
+						<select name="SBIRTHDAYYEAR" class='birth-year required-color'>
+<option value="1936">1936（昭和11）
+<option value="1937">1937（昭和12）
+<option value="1938">1938（昭和13）
+<option value="1939">1939（昭和14）
+<option value="1940">1940（昭和15）
+<option value="1941">1941（昭和16）
+<option value="1942">1942（昭和17）
+<option value="1943">1943（昭和18）
+<option value="1944">1944（昭和19）
+<option value="1945">1945（昭和20）
+<option value="1946">1946（昭和21）
+<option value="1947">1947（昭和22）
+<option value="1948">1948（昭和23）
+<option value="1949">1949（昭和24）
+<option value="1950">1950（昭和25）
+<option value="1951">1951（昭和26）
+<option value="1952">1952（昭和27）
+<option value="1953">1953（昭和28）
+<option value="1954">1954（昭和29）
+<option value="1955">1955（昭和30）
+<option value="1956">1956（昭和31）
+<option value="1957">1957（昭和32）
+<option value="1958">1958（昭和33）
+<option value="1959">1959（昭和34）
+<option value="1960">1960（昭和35）
+<option value="1961">1961（昭和36）
+<option value="1962">1962（昭和37）
+<option value="1963">1963（昭和38）
+<option value="1964">1964（昭和39）
+<option value="1965">1965（昭和40）
+<option value="1966">1966（昭和41）
+<option value="1967">1967（昭和42）
+<option value="1968">1968（昭和43）
+<option value="1969">1969（昭和44）
+<option value="1970">1970（昭和45）
+<option value="1971">1971（昭和46）
+<option value="1972">1972（昭和47）
+<option value="1973">1973（昭和48）
+<option value="1974">1974（昭和49）
+<option value="1975">1975（昭和50）
+<option value="1976">1976（昭和51）
+<option value="1977">1977（昭和52）
+<option value="1978">1978（昭和53）
+<option value="1979">1979（昭和54）
+<option value="1980">1980（昭和55）
+<option value="1981">1981（昭和56）
+<option value="1982">1982（昭和57）
+<option value="1983">1983（昭和58）
+<option value="1984">1984（昭和59）
+<option value="1985">1985（昭和60）
+<option value="1986">1986（昭和61）
+<option value="1987">1987（昭和62）
+<option value="1988">1988（昭和63）
+<option value="1989">1989（昭和64）
+<option value="1989">1989（平成元）
+<option value="1990">1990（平成2）
+<option value="1991">1991（平成3）
+<option value="1992">1992（平成4）
+<option value="1993">1993（平成5）
+<option value="1994">1994（平成6）
+<option value="1995">1995（平成7）
+<option value="1996">1996（平成8）
+<option value="1997">1997（平成9）
+<option value="1998">1998（平成10）
+<option value="1999">1999（平成11）
+<option value="2000">2000（平成12）
+<option value="2001">2001（平成13）
+<option value="2002">2002（平成14）
+<option value="2003">2003（平成15）
+<option value="2004">2004（平成16）
+<option value="2005">2005（平成17）
+<option value="2006">2006（平成18）
+<option value="" selected>
+<option value="2007">2007（平成19）
+<option value="2008">2008（平成20）
+<option value="2009">2009（平成21）
+<option value="2010">2010（平成22）
+<option value="2011">2011（平成23）
+<option value="2012">2012（平成24）
+<option value="2013">2013（平成25）
+<option value="2014">2014（平成26）
+<option value="2015">2015（平成27）
+<option value="2016">2016（平成28）
+<option value="2017">2017（平成29）
+<option value="2018">2018（平成30）
+<option value="2019">2019（平成31）
+<option value="2019">2019（令和元）
+<option value="2020">2020（令和2）
+<option value="2021">2021（令和3）
+<option value="2022">2022（令和4）
+<option value="2023">2023（令和5）
+<option value="2024">2024（令和6）
+<option value="2025">2025（令和7）
+<option value="2026">2026（令和8）
+<option value="2027">2027（令和9）
+<option value="2028">2028（令和10）
+<option value="2029">2029（令和11）
+<option value="2030">2030（令和12）
+<option value="2031">2031（令和13）
+<option value="2032">2032（令和14）
+<option value="2033">2033（令和15）
+<option value="2034">2034（令和16）
+<option value="2035">2035（令和17）
+<option value="2036">2036（令和18）
+</select>&nbsp;年&nbsp;&nbsp;
+						<select name="SBIRTHDAYMONTH" class='birth-month required-color'>
+<option value="" selected>
+<option value="01">01
+<option value="02">02
+<option value="03">03
+<option value="04">04
+<option value="05">05
+<option value="06">06
+<option value="07">07
+<option value="08">08
+<option value="09">09
+<option value="10">10
+<option value="11">11
+<option value="12">12
+</select>&nbsp;月&nbsp;&nbsp;
+						<select name="SBIRTHDAYDAY" class='birth-day required-color'>
+<option value="" selected>
+<option value="01">01
+<option value="02">02
+<option value="03">03
+<option value="04">04
+<option value="05">05
+<option value="06">06
+<option value="07">07
+<option value="08">08
+<option value="09">09
+<option value="10">10
+<option value="11">11
+<option value="12">12
+<option value="13">13
+<option value="14">14
+<option value="15">15
+<option value="16">16
+<option value="17">17
+<option value="18">18
+<option value="19">19
+<option value="20">20
+<option value="21">21
+<option value="22">22
+<option value="23">23
+<option value="24">24
+<option value="25">25
+<option value="26">26
+<option value="27">27
+<option value="28">28
+<option value="29">29
+<option value="30">30
+<option value="31">31
+</select>&nbsp;日
+					</td>
+					
+					<td class="error-message-area"></td>
+								
+				</tr>
+				<tr>
+					<th>
+						<span class="cell-txt-left"><strong>電話番号</strong></span>
+						<p class="required-mk"><img width="43" height="16" src="/asset/images/icon-required-red.png" alt="必須" /></p>
+					</th>
+					<td class="required_count required_area">
+						<input type="text" name="IPHONENUM1" value="" maxLength='5' inputmode='numeric' pattern='\d*' class='four-colum-input first-tel ime_mode_disabled required-color' />&nbsp;―
+						<input type="text" name="IPHONENUM2" value="" maxLength='4' inputmode='numeric' pattern='\d*' class='four-colum-input second-tel ime_mode_disabled required-color' />&nbsp;―
+						<input type="text" name="IPHONENUM3" value="" maxLength='5' inputmode='numeric' pattern='\d*' class='four-colum-input third-tel ime_mode_disabled required-color' />
+						<ul class="attention-list font-small fn mt10">
+						<li>※当社へ登録いただいている、ご自宅または携帯電話番号を入力してください。</li>
+						</ul>
+					</td>
+					
+					<td class="error-message-area" id="telnumCheack"></td>
+								
+				</tr>
+
+			</table>
+			
+			<table class="vertical-input-table wrap-validate-mail">
+				<tr>
+					<th>
+						<span class="cell-txt-left"><strong>メールアドレス</strong></span>
+						<p class="required-mk"><img width="43" height="16" src="/asset/images/icon-required-red.png" alt="必須" /></p><br/>
+						登録いただいたメールアドレスは、ログイン時のユーザーIDとして使用します。
+					</th>
+					<td class="required_count required_area">	
+						<input type="text" name="IEMAIL" value="" class='one-colum-input validate-mailaddress-single ime_mode_disabled required-color' maxLength='60' autocomplete='off' inputmode='email' />
+						<ul class="attention-list font-small fn mt10">
+						<li>※上記メールアドレスあてにお知らせメールをお送りさせていただきます。</li>
+						<li>※メールの配信を希望されない場合はインターコムクラブの「インターコムクラブ登録内容の変更」より変更いただけます。</li>
+						</ul>
+					</td>
+					
+					
+					<td class="error-message-area">
+					</td>
+					
+					
+				</tr>
+			</table>
+			<table class="vertical-input-table">
+				<tr>
+					<th>
+						<span class="cell-txt-left"><strong>ログインパスワード</strong></span>
+						<p class="required-mk"><img width="43" height="16" src="/asset/images/icon-required-red.png" alt="必須" /></p><br/>
+						半角英数字（必須）と記号（任意）を組み合わせて、6～20文字で入力してください。
+					</th>
+					<td class="required_count required_area">
+						<input type="password" name="IPASSWORD" value="" maxLength='20' id='password-disp' autocomplete='new-password' class='one-colum-input validate-password-single ime_mode_disabled required-color' /><br>
+					</td>
+		
+					
+					<td class="error-message-area"></td>
+					
+					<td>
+						<input type="checkbox" name="SHOW-PS" class='' id='show-ps' />&nbsp;<label for="show-ps">パスワードを表示する</label>
+						<ul class="attention-list font-small mt5">
+						<li>※ログインパスワードは会員登録後に変更できます。</li>
+						<li>※生年月日・氏名などの推測されやすい組み合わせや、他のWebサービスで使用しているパスワードは使わないでください。</li>
+						<li>※アルファベットは大文字と小文字が区別されます。</li>
+						<li>※使用できる記号は、以下の26種類です。</li>
+						<li>&emsp;@ ! ” # $ % ( ) * : + ; [ { , | - = ] } . ^ ~ / ? _</li>
+						</ul>
+					</td>
+				</tr>
+			</table>
+			<!-- / .three-column-table --></div>
+			<!-- / .center-section --></div>
+			<!-- / .one-colum --></div>
+			
+			<div class="center-section">
+			<div class="btn-area">
+			<p>
+				<input id="confirm" type="image" src="/asset/images/btn_reg_confirm.png" height="70" width="550" alt="確認画面へ" name="JARE00002_01M" onclick="doTransaction('JARE00002_01M');" class="over"/>
+			</p>
+			<!-- / .btn-area --></div>
+			<!-- / .center-section --></div>
+			<p class="page-top"><a href="#page-top">page top</a></p>
+			<!-- / #contents --></div>
+			
+			<div id="fotter">
+			<div id="fotter-inner">
+			<div id="footer-logo">
+			<p>Copyright &copy; JACCS Co., Ltd. All Rights Reserved.</p>
+			</div>
+			</div>
+			<!-- / #fotter --></div>
+			<!-- / #wrapper --></div>
+		</form>
+		
+		
+
+        <script type="text/javascript" src="/js/icm-transaction.js?ver=20211117"></script>
+		<script type="text/javascript" src="/asset/js/jquery.rollover.js?ver=20131114"></script>
+		<script type="text/javascript" src="/asset/js/jquery.page-scroller.js?ver=20131114"></script>
+		<script type="text/javascript" src="/asset/js/common.js?ver=20230810"></script>
+		<script type="text/javascript" src="/asset/js/jquery.flatheights.js?ver=20160614"></script>
+		<script type="text/javascript" src="/asset/js/password-mask.js?ver=20201211"></script>
+
+	<script type="text/javascript"  src="/AaJPxG3fWD63R2LT9ye3hN1KCRc/9u3QpDfXhtfztN/XCItclc/WR0eU/HdwJjMB"></script></body>
 </html>
