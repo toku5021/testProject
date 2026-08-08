@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ポケポケ カード管理</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header>
+    <h1>ポケポケ カード管理</h1>
+</header>
+
+<main>
+
+    <section class="summary">
+        <h2>コレクション状況</h2>
+
+        <div class="progress-area">
+            <div id="progress-text">0 / 0</div>
+            <div class="progress-bar">
+                <div id="progress"></div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>パック一覧</h2>
+
+        <div id="pack-list" class="pack-list">
+            <!-- JavaScriptで生成 -->
+        </div>
+    </section>
+
+    <section id="card-section" class="hidden">
+
+        <div class="card-header">
+            <button id="back-button">← パック一覧</button>
+
+            <h2 id="selected-pack-name"></h2>
+
+            <div id="pack-progress"></div>
+        </div>
+
+        <div class="filter">
+            <button class="filter-button active" data-filter="all">
+                すべて
+            </button>
+
+            <button class="filter-button" data-filter="owned">
+                所持
+            </button>
+
+            <button class="filter-button" data-filter="missing">
+                未所持
+            </button>
+        </div>
+
+        <div id="card-list" class="card-list">
+            <!-- JavaScriptで生成 -->
+        </div>
+
+    </section>
+
+</main>
+
+<script src="app.js"></script>
+
+</body>
+</html>

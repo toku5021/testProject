@@ -1,0 +1,50 @@
+[
+    {
+        "id": "A1-001",
+        "pack": "A1",
+        "packName": "最強の遺伝子",
+        "name": "フシギダネ",
+        "rarity": "♦",
+        "image": "https://images.unsplash.com/photo-1606500521117-0f7e1b1e6e9f?w=400"
+    },
+    {
+        "id": "A1-002",
+        "pack": "A1",
+        "packName": "最強の遺伝子",
+        "name": "フシギソウ",
+        "rarity": "♦♦",
+        "image": "https://images.unsplash.com/photo-1606500521117-0f7e1b1e6e9f?w=400"
+    },
+    {
+        "id": "A1-003",
+        "pack": "A1",
+        "packName": "最強の遺伝子",
+        "name": "フシギバナ",
+        "rarity": "♦♦♦♦",
+        "image": "https://images.unsplash.com/photo-1606500521117-0f7e1b1e6e9f?w=400"
+    },
+    {
+        "id": "A1-004",
+        "pack": "A1",
+        "packName": "最強の遺伝子",
+        "name": "ピカチュウ",
+        "rarity": "♦",
+        "image": "https://images.unsplash.com/photo-1606500521117-0f7e1b1e6e9f?w=400"
+    },
+    {
+        "id": "A1a-001",
+        "pack": "A1a",
+        "packName": "幻のいる島",
+        "name": "ミュウ",
+        "rarity": "♦♦♦♦",
+        "image": "https://images.unsplash.com/photo-1606500521117-0f7e1b1e6e9f?w=400"
+    },
+    {
+        "id": "A1a-002",
+        "pack": "A1a",
+        "packName": "幻のいる島",
+        "name": "セレビィ",
+        "rarity": "♦♦♦♦",
+        "image": "https://images.unsplash.com/photo-1606500521117-0f7e1b1e6e9f?w=400"
+    }
+]
