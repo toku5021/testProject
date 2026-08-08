@@ -111,6 +111,10 @@ function isOwned(cardId) {
   return getTotalQty(cardId) > 0;
 }
 
+// 管理対象は◆1〜◆4（データ上は ◊ / ◊◊ / ◊◊◊ / ◊◊◊◊）のみ。
+// ☆1〜☆3、クラウン、その他のレアリティは除外します。
+const MANAGED_RARITIES = new Set(["◊", "◊◊", "◊◊◊", "◊◊◊◊"]);
+
 function normalizeCard(card) {
   return {
     ...card,
@@ -119,6 +123,10 @@ function normalizeCard(card) {
     displayName: jaName(card.name),
     displayPack: jaPack(card.pack || "その他")
   };
+}
+
+function isManagedCard(card) {
+  return MANAGED_RARITIES.has(card.rarity);
 }
 
 function cardsForExpansion(expansion) {
@@ -245,10 +253,11 @@ async function loadData() {
       fetch(EXPANSION_DATA_URL, { cache: "no-store" })
     ]);
     if (!cardRes.ok || !expRes.ok) throw new Error("データ取得失敗");
-    cards = (await cardRes.json()).map(normalizeCard);
+    const allCards = (await cardRes.json()).map(normalizeCard);
+    cards = allCards.filter(isManagedCard);
     expansions = await expRes.json();
     $("data-status").textContent =
-      `カード ${cards.length.toLocaleString()}枚 / 拡張 ${expansions.length}件。`;
+      `管理対象 ${cards.length.toLocaleString()}枚 / 全カード ${allCards.length.toLocaleString()}枚。◆1〜◆4のみ表示`;
     renderAccounts();
     updateSelectedAccountName();
     renderHome();
