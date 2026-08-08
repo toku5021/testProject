@@ -1,60 +1,64 @@
-# ポケポケ カード管理
+# ポケポケ カード管理 v3
 
-HTML / CSS / JavaScriptだけで動くカード所持管理ページです。
+複数アカウントのカード所持枚数を管理する、HTML/CSS/JavaScriptだけのWebアプリです。
 
-## 機能
+## 主な機能
 
-- 拡張パック → ブースターパック → カードの順に表示
-- カード画像表示
-- 所持枚数を + / - で管理
-- 全体 / パック単位のコンプリート率
+- 複数アカウントを追加・名前変更・削除
+- アカウントを選択してカード枚数を + / - で管理
+- 1枚でもいずれかのアカウントが持っていれば「所持」
+- 全体・拡張・パック単位のコンプリート率
 - 所持 / 未所持フィルター
-- カード検索
-- パック検索
+- カード・パック検索
+- カード画像表示
 - localStorage保存
-- 所持情報のJSONバックアップ / 復元
+- 全アカウントのバックアップ / 復元
 - スマホ対応
 - GitHub Pages対応
 
-## データ
+## データ保存
 
-カード一覧とパック一覧は、以下の公開データをブラウザから直接取得します。
+所持情報はブラウザのlocalStorageに保存します。
 
-https://github.com/chase-manning/pokemon-tcg-pocket-cards
+PCとスマホは保存領域が別なので、現状では自動同期されません。
+端末間で同期したい場合はFirebase/Supabase等の導入が必要です。
 
-カード:
-https://raw.githubusercontent.com/chase-manning/pokemon-tcg-pocket-cards/refs/heads/main/v4.json
+## カードデータ
 
-拡張・パック:
-https://raw.githubusercontent.com/chase-manning/pokemon-tcg-pocket-cards/refs/heads/main/expansions.json
+以下の公開データをブラウザから取得します。
 
-そのため、このプロジェクトには巨大なcards.jsonを同梱していません。
-データ提供元が更新されると、ページを再読み込みした際に新しいデータを取得できます。
+https://github.com/chase-mew/pokemon-tcg-pocket-cards
 
 ## ローカル起動
 
-### Pythonがある場合
-
-このフォルダで:
+Pythonがある場合:
 
 python -m http.server 8000
 
 ブラウザ:
+
 http://localhost:8000/
-
-### VS Codeの場合
-
-Live Serverを使ってindex.htmlを開いてください。
 
 ## GitHub Pages
 
-このフォルダの4ファイルをGitHubリポジトリへpushし、
+このフォルダのファイルをGitHubリポジトリの公開対象フォルダに置き、
 Settings → Pages → Deploy from a branch → main / root
-を選択してください。
+で公開してください。
 
-## 注意
+## アカウント別データの考え方
 
-所持情報はブラウザのlocalStorageに保存されます。
-PCとスマホでは別々の保存領域です。
+例えば「フシギダネ」を、
 
-端末間で同期したい場合は、次の段階でFirebase / Supabase等を追加してください。
+メイン: 2枚
+サブ: 0枚
+サブ2: 1枚
+
+と登録した場合、
+
+- メインの表示: 2枚
+- サブの表示: 0枚
+- サブ2の表示: 1枚
+- 全アカウント合計: 3枚
+- コレクション上の状態: 所持
+
+となります。

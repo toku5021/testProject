@@ -11,7 +11,7 @@
 <header class="app-header">
   <div>
     <h1>ポケポケ カード管理</h1>
-    <p>カードの所持状況をパックごとに管理</p>
+    <p>複数アカウントのカード所持状況をまとめて管理</p>
   </div>
 </header>
 
@@ -21,6 +21,7 @@
       <div>
         <h2>コレクション状況</h2>
         <div id="total-progress" class="big-number">読み込み中...</div>
+        <div class="summary-note">※1枚でも誰かのアカウントが所持していれば「所持」として集計</div>
       </div>
       <div class="summary-actions">
         <button id="export-button" class="secondary-button">バックアップ</button>
@@ -33,6 +34,17 @@
     </div>
     <div class="progress-bar"><div id="total-progress-bar"></div></div>
     <div id="data-status" class="status">カードデータを読み込んでいます...</div>
+  </section>
+
+  <section class="account-section">
+    <div class="section-title-row">
+      <h2>アカウント管理</h2>
+      <button id="add-account-button" class="primary-button">＋ アカウント追加</button>
+    </div>
+    <div id="account-list" class="account-list"></div>
+    <div class="account-help">
+      カードの枚数を入力するアカウントを選択してください。カードが複数アカウントのどれかに1枚でもあれば、全体では「所持」になります。
+    </div>
   </section>
 
   <section id="home-section">
@@ -55,6 +67,11 @@
       <div class="progress-bar small"><div id="pack-progress-bar"></div></div>
     </div>
 
+    <div class="selected-account-banner">
+      <span>入力対象アカウント：</span>
+      <strong id="selected-account-name"></strong>
+    </div>
+
     <div class="toolbar">
       <input id="search-card" class="search" type="search" placeholder="カード名・番号を検索">
       <div class="filters">
@@ -68,8 +85,18 @@
   </section>
 </main>
 
-<div id="toast" class="toast"></div>
+<div id="account-modal" class="modal hidden">
+  <div class="modal-panel">
+    <h2>アカウント追加</h2>
+    <input id="new-account-name" class="modal-input" type="text" maxlength="30" placeholder="例：メイン">
+    <div class="modal-actions">
+      <button id="cancel-account-button" class="secondary-button">キャンセル</button>
+      <button id="save-account-button" class="primary-button">追加</button>
+    </div>
+  </div>
+</div>
 
+<div id="toast" class="toast"></div>
 <script src="app.js"></script>
 </body>
 </html>
