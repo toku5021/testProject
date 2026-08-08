@@ -76,3 +76,18 @@ Settings → Pages → Deploy from a branch → main / root
 
 カードデータ上ではそれぞれ `◊`, `◊◊`, `◊◊◊`, `◊◊◊◊` として登録されています。
 ☆1〜☆3、クラウンなど、それ以外のレアリティは一覧・コンプリート率の対象外です。
+
+
+## v5 レアリティフィルター
+
+管理対象は銀星に相当する以下の4段階のみです。
+
+- ◆1（データ上 `◊`）
+- ◆2（データ上 `◊◊`）
+- ◆3（データ上 `◊◊◊`）
+- ◆4（データ上 `◊◊◊◊`）
+
+カード一覧では「すべて / ◆1 / ◆2 / ◆3 / ◆4」で絞り込めます。
+☆1〜☆3、クラウンなどは管理対象外です。
+
+\n## v6 データ取得先\n\nカードデータの取得先を `pokemon-tcg-pocket-database` に変更しています。\n\n- cards.json: https://cdn.jsdelivr.net/npm/pokemon-tcg-pocket-database/dist/cards.json\n- sets.json: https://cdn.jsdelivr.net/npm/pokemon-tcg-pocket-database/dist/sets.json\n- カード画像: https://cdn.jsdelivr.net/npm/pokemon-tcg-pocket-database/cards-by-set/{set}/{number}.webp\n\nこのデータベースはカード・セット・レアリティ等をJSONで提供しています。\n2026-07-29公開の2.9.1ではB4「Rulers of the Skies」が追加されています。\n\n## 費用\n\nこの構成では、GitHub Pagesと公開JSON/CDNを利用するだけなので、アプリ側で新たな有料サービスを契約する必要はありません。\n

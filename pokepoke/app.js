@@ -1,7 +1,7 @@
 const CARD_DATA_URL =
-  "https://raw.githubusercontent.com/chase-manning/pokemon-tcg-pocket-cards/refs/heads/main/v4.json";
-const EXPANSION_DATA_URL =
-  "https://raw.githubusercontent.com/chase-manning/pokemon-tcg-pocket-cards/refs/heads/main/expansions.json";
+  "https://cdn.jsdelivr.net/npm/pokemon-tcg-pocket-database/dist/cards.json";
+const SET_DATA_URL =
+  "https://cdn.jsdelivr.net/npm/pokemon-tcg-pocket-database/dist/sets.json";
 
 const STORAGE_KEY = "pokepoke-collection-v3";
 const ACCOUNT_KEY = "pokepoke-accounts-v3";
@@ -114,33 +114,69 @@ function isOwned(cardId) {
 // 管理対象は◆1〜◆4（データ上は ◊ / ◊◊ / ◊◊◊ / ◊◊◊◊）のみ。
 // ☆1〜☆3、クラウン、その他のレアリティは除外します。
 const MANAGED_RARITIES = new Set(["◊", "◊◊", "◊◊◊", "◊◊◊◊"]);
+const RARITY_LABELS = {
+  "◊": "◆1",
+  "◊◊": "◆2",
+  "◊◊◊": "◆3",
+  "◊◊◊◊": "◆4"
+};
+let rarityFilter = "all";
+
+function normalizeRarity(value) {
+  if (value == null) return "";
+  const s = String(value).trim();
+  // Accept both the actual data symbols and common text forms.
+  if (s === "◊" || s === "◆" || s === "1") return "◊";
+  if (s === "◊◊" || s === "◆◆" || s === "2") return "◊◊";
+  if (s === "◊◊◊" || s === "◆◆◆" || s === "3") return "◊◊◊";
+  if (s === "◊◊◊◊" || s === "◆◆◆◆" || s === "4") return "◊◊◊◊";
+  return s;
+}
 
 function normalizeCard(card) {
+  const setId = String(card.set || "").toUpperCase();
+  const number = String(card.number ?? "");
+  const id = `${setId}-${number}`;
+
   return {
     ...card,
-    id: String(card.id),
-    expansionId: String(card.id).split("-")[0].toLowerCase(),
+    id,
+    set: setId,
+    number,
+    expansionId: setId,
+    pack: Array.isArray(card.packs) && card.packs.length ? card.packs[0] : "その他",
     displayName: jaName(card.name),
-    displayPack: jaPack(card.pack || "その他")
+    displayPack: Array.isArray(card.packs) && card.packs.length
+      ? jaPack(card.packs[0])
+      : "その他"
   };
 }
 
 function isManagedCard(card) {
-  return MANAGED_RARITIES.has(card.rarity);
+  return MANAGED_RARITIES.has(normalizeRarity(card.rarity));
 }
 
 function cardsForExpansion(expansion) {
-  return cards.filter(c => c.expansionId === expansion.id);
+  return cards.filter(c => c.expansionId === expansion.code);
 }
 
 function cardsForPack(expansionId, packName) {
-  return cards.filter(c => c.expansionId === expansionId && c.pack === packName);
+  return cards.filter(c =>
+    c.expansionId === expansionId &&
+    Array.isArray(c.packs) &&
+    c.packs.includes(packName)
+  );
 }
 
 function progressInfo(list) {
   const owned = list.filter(c => isOwned(c.id)).length;
   const percent = list.length ? Math.round(owned / list.length * 100) : 0;
   return { owned, total: list.length, percent };
+}
+
+function rarityFiltered(list) {
+  if (rarityFilter === "all") return list;
+  return list.filter(c => normalizeRarity(c.rarity) === rarityFilter);
 }
 
 function renderAccounts() {
@@ -246,18 +282,32 @@ function updateSelectedAccountName() {
 }
 
 async function loadData() {
-  $("data-status").textContent = "カードデータを読み込んでいます...";
+  $("data-status").textContent = "最新カードデータを読み込んでいます...";
   try {
-    const [cardRes, expRes] = await Promise.all([
+    const [cardRes, setRes] = await Promise.all([
       fetch(CARD_DATA_URL, { cache: "no-store" }),
-      fetch(EXPANSION_DATA_URL, { cache: "no-store" })
+      fetch(SET_DATA_URL, { cache: "no-store" })
     ]);
-    if (!cardRes.ok || !expRes.ok) throw new Error("データ取得失敗");
+    if (!cardRes.ok || !setRes.ok) throw new Error("データ取得失敗");
+
     const allCards = (await cardRes.json()).map(normalizeCard);
+    const setObject = await setRes.json();
+    const allSets = Object.values(setObject).flat();
+
     cards = allCards.filter(isManagedCard);
-    expansions = await expRes.json();
+
+    expansions = allSets.map(exp => ({
+      ...exp,
+      id: String(exp.code).toUpperCase(),
+      name: exp.name?.ja || exp.name?.en || String(exp.code),
+      packs: Array.isArray(exp.packs)
+        ? exp.packs.map(name => ({ name }))
+        : []
+    }));
+
     $("data-status").textContent =
       `管理対象 ${cards.length.toLocaleString()}枚 / 全カード ${allCards.length.toLocaleString()}枚。◆1〜◆4のみ表示`;
+
     renderAccounts();
     updateSelectedAccountName();
     renderHome();
@@ -304,12 +354,9 @@ function renderHome() {
     visiblePacks.forEach(packName => {
       const list = cardsForPack(exp.id, packName);
       const p = progressInfo(list);
-      const packDef = (exp.packs || []).find(x => x.name === packName);
-
       const card = document.createElement("div");
       card.className = "pack";
       card.innerHTML = `
-        ${packDef?.image ? `<img class="pack-image" src="${packDef.image}" alt="">` : ""}
         <div class="pack-name">${escapeHtml(jaPack(packName))}</div>
         <div class="pack-count">${p.owned} / ${p.total} 所持 (${p.percent}%)</div>
       `;
@@ -330,6 +377,7 @@ function openPack(expansionId, packName) {
   selectedExpansion = expansions.find(e => e.id === expansionId);
   selectedPack = packName;
   filter = "all";
+  rarityFilter = "all";
   cardSearch = "";
   $("home-section").classList.add("hidden");
   $("card-section").classList.remove("hidden");
@@ -351,12 +399,40 @@ function updatePackProgress() {
   $("pack-progress-bar").style.width = `${p.percent}%`;
 }
 
+function renderRarityButtons() {
+  const root = $("rarity-filters");
+  if (!root) return;
+  root.innerHTML = "";
+
+  const options = [
+    ["all", "すべて"],
+    ["◊", "◆1"],
+    ["◊◊", "◆2"],
+    ["◊◊◊", "◆3"],
+    ["◊◊◊◊", "◆4"]
+  ];
+
+  options.forEach(([value, label]) => {
+    const button = document.createElement("button");
+    button.className = "filter-button" + (rarityFilter === value ? " active" : "");
+    button.textContent = label;
+    button.addEventListener("click", () => {
+      rarityFilter = value;
+      renderCards();
+    });
+    root.appendChild(button);
+  });
+}
+
 function renderCards() {
   const root = $("card-list");
   root.innerHTML = "";
   const query = cardSearch.trim().toLowerCase();
 
+  renderRarityButtons();
+
   let list = cardsForPack(selectedExpansion.id, selectedPack);
+  list = rarityFiltered(list);
   if (filter === "owned") list = list.filter(c => isOwned(c.id));
   if (filter === "missing") list = list.filter(c => !isOwned(c.id));
 
@@ -388,12 +464,12 @@ function renderCards() {
 
     el.innerHTML = `
       ${totalQty ? `<div class="owned-badge">所持</div>` : ""}
-      <img class="card-image" loading="lazy" src="${c.image}" alt="${escapeHtml(c.displayName)}"
+      <img class="card-image" loading="lazy" src="https://cdn.jsdelivr.net/npm/pokemon-tcg-pocket-database/cards-by-set/${encodeURIComponent(c.set)}/${encodeURIComponent(c.number)}.webp" alt="${escapeHtml(c.displayName)}"
            onerror="this.style.visibility='hidden'">
       <div class="card-info">
         <div class="card-name">${escapeHtml(c.displayName)}</div>
         <div class="card-meta">${escapeHtml(c.id.toUpperCase())}</div>
-        <div class="rarity">${escapeHtml(c.rarity || "")}${c.ex === "Yes" ? " / ex" : ""}</div>
+        <div class="rarity">${escapeHtml(RARITY_LABELS[normalizeRarity(c.rarity)] || c.rarity || "")}${c.ex === "Yes" ? " / ex" : ""}</div>
 
         <div class="quantity-row">
           <button aria-label="1枚減らす">−</button>
