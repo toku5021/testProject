@@ -1,106 +1,100 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#111827">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ポケポケ カード管理</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header class="app-header">
-  <div>
-    <h1>ポケポケ カード管理</h1>
-    <p>複数アカウントのカード所持状況をまとめて管理</p>
-  </div>
-</header>
+  <header class="app-header">
+    <div class="container">
+      <h1>🎴 ポケポケ カード管理</h1>
+      <p>銀星 (◆1〜◆4) 専用 / 3アカウント連動コレクションチェッカー</p>
+    </div>
+  </header>
 
-<main class="container">
-  <section class="summary-card">
-    <div class="summary-top">
-      <div>
-        <h2>コレクション状況</h2>
-        <div id="total-progress" class="big-number">読み込み中...</div>
-        <div class="summary-note">※1枚でも誰かのアカウントが所持していれば「所持」として集計</div>
+  <main class="container">
+    <!-- 全体ステータス・バックアップ -->
+    <section class="card-panel">
+      <div class="summary-header">
+        <div>
+          <h2>全アカウント コレクション率</h2>
+          <div id="total-progress" class="big-number">読み込み中...</div>
+          <p class="sub-text">※3アカウント中1枚でも所有していれば「保持」扱いとなります</p>
+        </div>
+        <div class="button-group">
+          <button id="export-btn" class="btn btn-secondary">バックアップ (JSON)</button>
+          <label class="btn btn-secondary">
+            復元
+            <input id="import-file" type="file" accept=".json" hidden>
+          </label>
+          <button id="reset-btn" class="btn btn-danger">全リセット</button>
+        </div>
       </div>
-      <div class="summary-actions">
-        <button id="export-button" class="secondary-button">バックアップ</button>
-        <label class="secondary-button file-button">
-          復元
-          <input id="import-file" type="file" accept=".json,application/json">
-        </label>
-        <button id="reset-button" class="danger-button">所持情報をリセット</button>
+      <div class="progress-bar"><div id="total-progress-bar"></div></div>
+      <div id="status-message" class="status-message">最新カードデータを取得中...</div>
+    </section>
+
+    <!-- アカウント選択 -->
+    <section class="card-panel">
+      <h2>操作アカウント切り替え</h2>
+      <div id="account-tabs" class="account-tabs"></div>
+      <p class="sub-text">枚数を＋/ーで入力したいアカウントを選択してください。</p>
+    </section>
+
+    <!-- パック一覧ビュー -->
+    <section id="pack-view">
+      <div class="section-header">
+        <h2>パック一覧</h2>
+        <input id="search-pack" class="search-input" type="search" placeholder="パック名・セット名で検索...">
       </div>
-    </div>
-    <div class="progress-bar"><div id="total-progress-bar"></div></div>
-    <div id="data-status" class="status">カードデータを読み込んでいます...</div>
-  </section>
+      <div id="pack-list"></div>
+    </section>
 
-  <section class="account-section">
-    <div class="section-title-row">
-      <h2>アカウント管理</h2>
-      <button id="add-account-button" class="primary-button">＋ アカウント追加</button>
-    </div>
-    <div id="account-list" class="account-list"></div>
-    <div class="account-help">
-      カードの枚数を入力するアカウントを選択してください。カードが複数アカウントのどれかに1枚でもあれば、全体では「所持」になります。
-    </div>
-  </section>
-
-  <section id="home-section">
-    <div class="section-title-row">
-      <h2>パック一覧</h2>
-      <input id="search-pack" class="search" type="search" placeholder="パックを検索">
-    </div>
-    <div id="pack-list"></div>
-  </section>
-
-  <section id="card-section" class="hidden">
-    <button id="back-button" class="back-button">← パック一覧</button>
-
-    <div class="pack-title-card">
-      <div>
-        <div id="breadcrumb" class="breadcrumb"></div>
-        <h2 id="selected-pack-name"></h2>
-        <div id="pack-progress-text"></div>
+    <!-- カード一覧ビュー -->
+    <section id="card-view" class="hidden">
+      <button id="back-btn" class="btn btn-secondary">← パック一覧に戻る</button>
+      
+      <div class="card-panel pack-title-panel">
+        <div>
+          <div id="breadcrumb" class="breadcrumb"></div>
+          <h2 id="selected-pack-name"></h2>
+          <div id="pack-progress-text" class="sub-text"></div>
+        </div>
+        <div class="progress-bar small"><div id="pack-progress-bar"></div></div>
       </div>
-      <div class="progress-bar small"><div id="pack-progress-bar"></div></div>
-    </div>
 
-    <div class="selected-account-banner">
-      <span>入力対象アカウント：</span>
-      <strong id="selected-account-name"></strong>
-    </div>
-
-    <div class="toolbar">
-      <input id="search-card" class="search" type="search" placeholder="カード名・番号を検索">
-      <div class="filters">
-        <button class="filter-button active" data-filter="all">すべて</button>
-        <button class="filter-button" data-filter="missing">未所持</button>
-        <button class="filter-button" data-filter="owned">所持</button>
+      <div class="account-banner">
+        現在の入力対象：<strong id="active-account-label"></strong>
       </div>
-    </div>
-    <div class="rarity-toolbar">
-      <span>レアリティ：</span>
-      <div id="rarity-filters" class="filters"></div>
-    </div>
 
-    <div id="card-list" class="card-list"></div>
-  </section>
-</main>
+      <!-- フィルター controls -->
+      <div class="toolbar">
+        <input id="search-card" class="search-input" type="search" placeholder="カード名・番号で検索...">
+        
+        <div class="filter-group">
+          <span class="filter-label">状態:</span>
+          <button class="filter-btn active" data-filter="all">すべて</button>
+          <button class="filter-btn" data-filter="missing">未保持</button>
+          <button class="filter-btn" data-filter="owned">保持済</button>
+        </div>
 
-<div id="account-modal" class="modal hidden">
-  <div class="modal-panel">
-    <h2>アカウント追加</h2>
-    <input id="new-account-name" class="modal-input" type="text" maxlength="30" placeholder="例：メイン">
-    <div class="modal-actions">
-      <button id="cancel-account-button" class="secondary-button">キャンセル</button>
-      <button id="save-account-button" class="primary-button">追加</button>
-    </div>
-  </div>
-</div>
+        <div class="filter-group">
+          <span class="filter-label">レアリティ:</span>
+          <button class="rarity-btn active" data-rarity="all">すべて</button>
+          <button class="rarity-btn" data-rarity="◊">◆1</button>
+          <button class="rarity-btn" data-rarity="◊◊">◆2</button>
+          <button class="rarity-btn" data-rarity="◊◊◊">◆3</button>
+          <button class="rarity-btn" data-rarity="◊◊◊◊">◆4</button>
+        </div>
+      </div>
 
-<div id="toast" class="toast"></div>
-<script src="app.js"></script>
+      <div id="card-grid" class="card-grid"></div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast"></div>
+  <script src="app.js"></script>
 </body>
 </html>
