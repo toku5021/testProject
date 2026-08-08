@@ -1,385 +1,362 @@
+const CARD_DATA_URL =
+  "https://raw.githubusercontent.com/chase-manning/pokemon-tcg-pocket-cards/refs/heads/main/v4.json";
+const EXPANSION_DATA_URL =
+  "https://raw.githubusercontent.com/chase-manning/pokemon-tcg-pocket-cards/refs/heads/main/expansions.json";
+
+const STORAGE_KEY = "pokepoke-collection-v2";
+
 let cards = [];
+let expansions = [];
 let selectedPack = null;
-let currentFilter = "all";
+let selectedExpansion = null;
+let filter = "all";
+let packSearch = "";
+let cardSearch = "";
 
-const STORAGE_KEY = "pokepoke-owned-cards";
+const $ = id => document.getElementById(id);
 
-// --------------------
-// 初期化
-// --------------------
+const expansionJa = {
+  a1:"最強の遺伝子", a1a:"幻のいる島", promo:"プロモ",
+  a2:"時空の激闘", a2a:"超克の光", a2b:"シャイニングハイ",
+  a3:"空と海の導き", a3a:"異次元クライシス", a3b:"イーブイガーデン",
+  a4:"空と海の導き", a4a:"秘境の泉", a4b:"ex",
+  b1:"メガライジング", b1a:"紅蓮の覇道", b2:"幻想の宴",
+  b2a:"パルデアの鼓動", b2b:"メガシャイン",
+  b3:"波動ビート", b3a:"進撃パラドックス", b3b:"ミラクルデイズ"
+};
 
-document.addEventListener("DOMContentLoaded", async () => {
+const packJa = {
+  Pikachu:"ピカチュウ", Mewtwo:"ミュウツー", Charizard:"リザードン",
+  Mew:"ミュウ", Dialga:"ディアルガ", Palkia:"パルキア",
+  Arceus:"アルセウス", Booster:"ブースター",
+  Lunala:"ルナアーラ", Solgaleo:"ソルガレオ",
+  "Promo-A":"プロモA", "Promo-B":"プロモB",
+  "Mega Altaria":"メガチルタリス", "Mega Blaziken":"メガバシャーモ",
+  "Mega Gyarados":"メガギャラドス"
+};
 
-    try {
-        const response = await fetch("cards.json");
+const cardJa = {
+  Bulbasaur:"フシギダネ", Ivysaur:"フシギソウ", Venusaur:"フシギバナ",
+  "Venusaur ex":"フシギバナex", Charmander:"ヒトカゲ", Charmeleon:"リザード",
+  Charizard:"リザードン", "Charizard ex":"リザードンex",
+  Pikachu:"ピカチュウ", "Pikachu ex":"ピカチュウex", Mew:"ミュウ",
+  Mewtwo:"ミュウツー", "Mewtwo ex":"ミュウツーex", Celebi:"セレビィ",
+  Eevee:"イーブイ", Sylveon:"ニンフィア", Snorlax:"カビゴン",
+  Jigglypuff:"プリン", Caterpie:"キャタピー", Metapod:"トランセル",
+  Butterfree:"バタフリー", Piplup:"ポッチャマ", Milotic:"ミロカロス",
+  Dedenne:"デデンネ", "Dedenne ex":"デデンネex",
+  "Mega Diancie ex":"メガディアンシーex", "Mega Sableye ex":"メガヤミラミex"
+};
 
-        if (!response.ok) {
-            throw new Error("カードデータを取得できませんでした");
-        }
+function jaName(name) {
+  if (cardJa[name]) return cardJa[name];
+  if (name.startsWith("Hisuian ")) return "ヒスイ" + name.slice(8);
+  if (name.startsWith("Mega ")) return "メガ" + name.slice(5);
+  return name;
+}
+function jaExpansion(name, id) { return expansionJa[id] || name; }
+function jaPack(name) { return packJa[name] || name; }
 
-        cards = await response.json();
+function getOwned() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); }
+  catch { return {}; }
+}
+function saveOwned(data) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+function qty(id) { return Number(getOwned()[id] || 0); }
 
-        renderPacks();
-        updateTotalProgress();
-
-    } catch (error) {
-        console.error(error);
-
-        alert(
-            "カードデータを読み込めませんでした。\n" +
-            "ローカルサーバーから起動してください。"
-        );
-    }
-});
-
-// --------------------
-// localStorage
-// --------------------
-
-function getOwnedCards() {
-
-    const data = localStorage.getItem(STORAGE_KEY);
-
-    if (!data) {
-        return {};
-    }
-
-    return JSON.parse(data);
+function expansionIdFromCard(card) {
+  return card.id.split("-")[0].toLowerCase();
 }
 
-function saveOwnedCards(data) {
-
-    localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify(data)
-    );
+function normalizeCard(card) {
+  return {
+    ...card,
+    id: String(card.id),
+    expansionId: expansionIdFromCard(card),
+    displayName: jaName(card.name),
+    displayPack: jaPack(card.pack || "その他")
+  };
 }
 
-function getQuantity(cardId) {
-
-    const owned = getOwnedCards();
-
-    return owned[cardId] || 0;
+function packKey(card) {
+  return card.pack || "その他";
 }
 
-// --------------------
-// パック一覧
-// --------------------
+async function loadData() {
+  $("data-status").textContent = "カードデータを読み込んでいます...";
+  try {
+    const [cardRes, expRes] = await Promise.all([
+      fetch(CARD_DATA_URL, { cache: "no-store" }),
+      fetch(EXPANSION_DATA_URL, { cache: "no-store" })
+    ]);
+    if (!cardRes.ok || !expRes.ok) throw new Error("データ取得失敗");
+    cards = (await cardRes.json()).map(normalizeCard);
+    expansions = await expRes.json();
+    $("data-status").textContent =
+      `カード ${cards.length.toLocaleString()}枚 / 拡張 ${expansions.length}件。外部公開データを使用中。`;
+    renderHome();
+    updateTotal();
+  } catch (e) {
+    console.error(e);
+    $("data-status").innerHTML =
+      "カードデータを取得できませんでした。インターネット接続を確認してください。";
+    $("total-progress").textContent = "読み込み失敗";
+  }
+}
 
-function renderPacks() {
+function cardsForExpansion(expansion) {
+  return cards.filter(c => c.expansionId === expansion.id);
+}
 
-    const packList = document.getElementById("pack-list");
+function cardsForPack(expansionId, packName) {
+  return cards.filter(c =>
+    c.expansionId === expansionId && c.pack === packName
+  );
+}
 
-    packList.innerHTML = "";
+function progressInfo(list) {
+  const owned = list.filter(c => qty(c.id) > 0).length;
+  const percent = list.length ? Math.round(owned / list.length * 100) : 0;
+  return { owned, total: list.length, percent };
+}
 
-    const packs = {};
+function renderHome() {
+  const root = $("pack-list");
+  root.innerHTML = "";
+  const q = packSearch.trim().toLowerCase();
 
-    cards.forEach(card => {
+  expansions.forEach(exp => {
+    const expCards = cardsForExpansion(exp);
+    if (!expCards.length) return;
 
-        if (!packs[card.pack]) {
+    const packNames = [...new Set(expCards.map(c => c.pack || "その他"))];
+    const visiblePacks = packNames.filter(name => {
+      const text = `${jaExpansion(exp.name, exp.id)} ${jaPack(name)} ${name}`.toLowerCase();
+      return !q || text.includes(q);
+    });
+    if (!visiblePacks.length) return;
 
-            packs[card.pack] = {
-                name: card.packName,
-                cards: []
-            };
-        }
+    const info = progressInfo(expCards);
+    const section = document.createElement("div");
+    section.className = "expansion";
 
-        packs[card.pack].cards.push(card);
+    const header = document.createElement("div");
+    header.className = "expansion-header";
+    header.innerHTML = `
+      <span>${escapeHtml(jaExpansion(exp.name, exp.id))} <small>(${escapeHtml(exp.id.toUpperCase())})</small></span>
+      <span class="expansion-progress">${info.owned} / ${info.total} (${info.percent}%)</span>
+    `;
+    section.appendChild(header);
+
+    const grid = document.createElement("div");
+    grid.className = "pack-grid";
+
+    visiblePacks.forEach(packName => {
+      const list = cardsForPack(exp.id, packName);
+      const p = progressInfo(list);
+      const packDef = (exp.packs || []).find(x => x.name === packName);
+
+      const card = document.createElement("div");
+      card.className = "pack";
+      card.innerHTML = `
+        ${packDef?.image ? `<img class="pack-image" src="${packDef.image}" alt="">` : ""}
+        <div class="pack-name">${escapeHtml(jaPack(packName))}</div>
+        <div class="pack-count">${p.owned} / ${p.total} 所持 (${p.percent}%)</div>
+      `;
+      card.addEventListener("click", () => openPack(exp.id, packName));
+      grid.appendChild(card);
     });
 
-    Object.entries(packs).forEach(([packId, pack]) => {
+    section.appendChild(grid);
+    root.appendChild(section);
+  });
 
-        const ownedCount = pack.cards.filter(
-            card => getQuantity(card.id) > 0
-        ).length;
-
-        const div = document.createElement("div");
-
-        div.className = "pack";
-
-        div.innerHTML = `
-            <div class="pack-name">
-                ${packId} ${pack.name}
-            </div>
-
-            <div class="pack-progress">
-                ${ownedCount} / ${pack.cards.length} 所持
-            </div>
-        `;
-
-        div.addEventListener("click", () => {
-
-            openPack(packId);
-
-        });
-
-        packList.appendChild(div);
-
-    });
+  if (!root.children.length) {
+    root.innerHTML = `<div class="empty">該当するパックがありません。</div>`;
+  }
 }
 
-// --------------------
-// パック表示
-// --------------------
-
-function openPack(packId) {
-
-    selectedPack = packId;
-
-    currentFilter = "all";
-
-    document
-        .querySelector("main section:nth-child(2)")
-        .classList.add("hidden");
-
-    document
-        .getElementById("card-section")
-        .classList.remove("hidden");
-
-    const packCards = cards.filter(
-        card => card.pack === packId
-    );
-
-    if (packCards.length === 0) {
-        return;
-    }
-
-    document.getElementById(
-        "selected-pack-name"
-    ).textContent =
-        `${packId} ${packCards[0].packName}`;
-
-    updatePackProgress();
-
-    renderCards();
-
-    updateFilterButtons();
+function openPack(expansionId, packName) {
+  selectedExpansion = expansions.find(e => e.id === expansionId);
+  selectedPack = packName;
+  filter = "all";
+  cardSearch = "";
+  $("home-section").classList.add("hidden");
+  $("card-section").classList.remove("hidden");
+  $("search-card").value = "";
+  $("selected-pack-name").textContent = jaPack(packName);
+  $("breadcrumb").textContent =
+    `${jaExpansion(selectedExpansion.name, selectedExpansion.id)} / ${jaPack(packName)}`;
+  updatePackProgress();
+  updateFilterButtons();
+  renderCards();
 }
-
-// --------------------
-// カード一覧
-// --------------------
-
-function renderCards() {
-
-    const cardList = document.getElementById("card-list");
-
-    cardList.innerHTML = "";
-
-    let packCards = cards.filter(
-        card => card.pack === selectedPack
-    );
-
-    if (currentFilter === "owned") {
-
-        packCards = packCards.filter(
-            card => getQuantity(card.id) > 0
-        );
-
-    } else if (currentFilter === "missing") {
-
-        packCards = packCards.filter(
-            card => getQuantity(card.id) === 0
-        );
-
-    }
-
-    packCards.forEach(card => {
-
-        const quantity = getQuantity(card.id);
-
-        const div = document.createElement("div");
-
-        div.className = "card";
-
-        div.innerHTML = `
-            <img
-                class="card-image"
-                src="${card.image}"
-                alt="${card.name}"
-            >
-
-            <div class="card-name">
-                ${card.name}
-            </div>
-
-            <div class="card-number">
-                ${card.id} / ${card.rarity}
-            </div>
-
-            <div class="quantity">
-
-                <button data-action="minus">
-                    −
-                </button>
-
-                <span class="quantity-value">
-                    ${quantity}
-                </span>
-
-                <button data-action="plus">
-                    ＋
-                </button>
-
-            </div>
-        `;
-
-        div.querySelector(
-            '[data-action="minus"]'
-        ).addEventListener("click", () => {
-
-            changeQuantity(card.id, -1);
-
-        });
-
-        div.querySelector(
-            '[data-action="plus"]'
-        ).addEventListener("click", () => {
-
-            changeQuantity(card.id, 1);
-
-        });
-
-        cardList.appendChild(div);
-
-    });
-}
-
-// --------------------
-// 所持枚数変更
-// --------------------
-
-function changeQuantity(cardId, amount) {
-
-    const owned = getOwnedCards();
-
-    const current = owned[cardId] || 0;
-
-    const next = Math.max(
-        0,
-        current + amount
-    );
-
-    owned[cardId] = next;
-
-    saveOwnedCards(owned);
-
-    renderCards();
-
-    updatePackProgress();
-
-    updateTotalProgress();
-
-    renderPacks();
-}
-
-// --------------------
-// パック進捗
-// --------------------
 
 function updatePackProgress() {
+  const list = cardsForPack(selectedExpansion.id, selectedPack);
+  const p = progressInfo(list);
+  $("pack-progress-text").textContent = `${p.owned} / ${p.total} 所持 (${p.percent}%)`;
+  $("pack-progress-bar").style.width = `${p.percent}%`;
+}
 
-    const packCards = cards.filter(
-        card => card.pack === selectedPack
+function renderCards() {
+  const root = $("card-list");
+  root.innerHTML = "";
+  const query = cardSearch.trim().toLowerCase();
+
+  let list = cardsForPack(selectedExpansion.id, selectedPack);
+
+  if (filter === "owned") list = list.filter(c => qty(c.id) > 0);
+  if (filter === "missing") list = list.filter(c => qty(c.id) === 0);
+
+  if (query) {
+    list = list.filter(c =>
+      `${c.displayName} ${c.name} ${c.id}`.toLowerCase().includes(query)
     );
+  }
 
-    const ownedCount = packCards.filter(
-        card => getQuantity(card.id) > 0
-    ).length;
+  list.sort((a,b) => a.id.localeCompare(b.id, undefined, { numeric: true }));
 
-    const percentage =
-        packCards.length === 0
-            ? 0
-            : Math.round(
-                ownedCount / packCards.length * 100
-            );
+  if (!list.length) {
+    root.innerHTML = `<div class="empty">該当するカードがありません。</div>`;
+    return;
+  }
 
-    document.getElementById(
-        "pack-progress"
-    ).textContent =
-        `${ownedCount} / ${packCards.length} (${percentage}%)`;
+  list.forEach(c => {
+    const n = qty(c.id);
+    const el = document.createElement("article");
+    el.className = `card ${n ? "" : "missing"}`;
+    el.innerHTML = `
+      ${n ? `<div class="owned-badge">所持</div>` : ""}
+      <img class="card-image" loading="lazy" src="${c.image}" alt="${escapeHtml(c.displayName)}"
+           onerror="this.style.visibility='hidden'">
+      <div class="card-info">
+        <div class="card-name">${escapeHtml(c.displayName)}</div>
+        <div class="card-meta">${escapeHtml(c.id.toUpperCase())}</div>
+        <div class="rarity">${escapeHtml(c.rarity || "")}${c.ex === "Yes" ? " / ex" : ""}</div>
+        <div class="quantity-row">
+          <button aria-label="1枚減らす">−</button>
+          <span class="quantity">${n}</span>
+          <button aria-label="1枚増やす">＋</button>
+        </div>
+      </div>
+    `;
+    const buttons = el.querySelectorAll("button");
+    buttons[0].addEventListener("click", () => changeQty(c.id, -1));
+    buttons[1].addEventListener("click", () => changeQty(c.id, +1));
+    root.appendChild(el);
+  });
 }
 
-// --------------------
-// 全体進捗
-// --------------------
-
-function updateTotalProgress() {
-
-    const total = cards.length;
-
-    const ownedCount = cards.filter(
-        card => getQuantity(card.id) > 0
-    ).length;
-
-    const percentage =
-        total === 0
-            ? 0
-            : Math.round(
-                ownedCount / total * 100
-            );
-
-    document.getElementById(
-        "progress-text"
-    ).textContent =
-        `${ownedCount} / ${total} (${percentage}%)`;
-
-    document.getElementById(
-        "progress"
-    ).style.width =
-        `${percentage}%`;
+function changeQty(id, delta) {
+  const data = getOwned();
+  data[id] = Math.max(0, Number(data[id] || 0) + delta);
+  if (data[id] === 0) delete data[id];
+  saveOwned(data);
+  renderCards();
+  updatePackProgress();
+  updateTotal();
+  renderHome();
 }
 
-// --------------------
-// 戻る
-// --------------------
-
-document.getElementById(
-    "back-button"
-).addEventListener("click", () => {
-
-    document
-        .getElementById("card-section")
-        .classList.add("hidden");
-
-    document
-        .querySelector("main section:nth-child(2)")
-        .classList.remove("hidden");
-
-    renderPacks();
-});
-
-// --------------------
-// フィルター
-// --------------------
-
-document.querySelectorAll(
-    ".filter-button"
-).forEach(button => {
-
-    button.addEventListener("click", () => {
-
-        currentFilter =
-            button.dataset.filter;
-
-        updateFilterButtons();
-
-        renderCards();
-
-    });
-
-});
+function updateTotal() {
+  const p = progressInfo(cards);
+  $("total-progress").textContent = `${p.owned.toLocaleString()} / ${p.total.toLocaleString()} (${p.percent}%)`;
+  $("total-progress-bar").style.width = `${p.percent}%`;
+}
 
 function updateFilterButtons() {
-
-    document.querySelectorAll(
-        ".filter-button"
-    ).forEach(button => {
-
-        button.classList.toggle(
-            "active",
-            button.dataset.filter === currentFilter
-        );
-
-    });
+  document.querySelectorAll(".filter-button").forEach(b =>
+    b.classList.toggle("active", b.dataset.filter === filter)
+  );
 }
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c =>
+    ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" })[c]
+  );
+}
+
+function toast(message) {
+  const t = $("toast");
+  t.textContent = message;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 1800);
+}
+
+$("back-button").addEventListener("click", () => {
+  $("card-section").classList.add("hidden");
+  $("home-section").classList.remove("hidden");
+  renderHome();
+});
+
+document.querySelectorAll(".filter-button").forEach(b =>
+  b.addEventListener("click", () => {
+    filter = b.dataset.filter;
+    updateFilterButtons();
+    renderCards();
+  })
+);
+
+$("search-pack").addEventListener("input", e => {
+  packSearch = e.target.value;
+  renderHome();
+});
+
+$("search-card").addEventListener("input", e => {
+  cardSearch = e.target.value;
+  renderCards();
+});
+
+$("reset-button").addEventListener("click", () => {
+  if (!confirm("所持情報をすべて削除します。よろしいですか？")) return;
+  localStorage.removeItem(STORAGE_KEY);
+  updateTotal();
+  renderHome();
+  if (!selectedPack) return;
+  updatePackProgress();
+  renderCards();
+  toast("所持情報をリセットしました");
+});
+
+$("export-button").addEventListener("click", () => {
+  const data = {
+    app: "pokepoke-card-manager",
+    version: 2,
+    exportedAt: new Date().toISOString(),
+    owned: getOwned()
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "pokepoke-collection-backup.json";
+  a.click();
+  URL.revokeObjectURL(url);
+  toast("バックアップを保存しました");
+});
+
+$("import-file").addEventListener("change", async e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  try {
+    const data = JSON.parse(await file.text());
+    if (!data || typeof data.owned !== "object") throw new Error();
+    saveOwned(data.owned);
+    updateTotal();
+    renderHome();
+    if (selectedPack) {
+      updatePackProgress();
+      renderCards();
+    }
+    toast("バックアップを復元しました");
+  } catch {
+    alert("バックアップファイルを読み込めませんでした。");
+  } finally {
+    e.target.value = "";
+  }
+});
+
+loadData();
