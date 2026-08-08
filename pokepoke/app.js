@@ -52,12 +52,13 @@ const cardJa = {
 };
 
 function jaName(name) {
+  if (!name) return "";
   if (cardJa[name]) return cardJa[name];
   if (name.startsWith("Hisuian ")) return "ヒスイ" + name.slice(8);
   if (name.startsWith("Mega ")) return "メガ" + name.slice(5);
   return name;
 }
-function jaExpansion(name, id) { return expansionJa[id] || name; }
+function jaExpansion(name, id) { return expansionJa[id?.toLowerCase()] || name; }
 function jaPack(name) { return packJa[name] || name; }
 
 function makeId() {
@@ -84,15 +85,6 @@ function saveOwned(data) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 }
 
-/*
-  保存形式:
-  {
-    "A1-001": {
-      "acc-1": 2,
-      "acc-2": 1
-    }
-  }
-*/
 function getCardAccounts(cardId) {
   const all = getOwned();
   return all[cardId] || {};
@@ -111,8 +103,6 @@ function isOwned(cardId) {
   return getTotalQty(cardId) > 0;
 }
 
-// 管理対象は◆1〜◆4（データ上は ◊ / ◊◊ / ◊◊◊ / ◊◊◊◊）のみ。
-// ☆1〜☆3、クラウン、その他のレアリティは除外します。
 const MANAGED_RARITIES = new Set(["◊", "◊◊", "◊◊◊", "◊◊◊◊"]);
 const RARITY_LABELS = {
   "◊": "◆1",
@@ -125,7 +115,6 @@ let rarityFilter = "all";
 function normalizeRarity(value) {
   if (value == null) return "";
   const s = String(value).trim();
-  // Accept both the actual data symbols and common text forms.
   if (s === "◊" || s === "◆" || s === "1") return "◊";
   if (s === "◊◊" || s === "◆◆" || s === "2") return "◊◊";
   if (s === "◊◊◊" || s === "◆◆◆" || s === "3") return "◊◊◊";
@@ -137,6 +126,14 @@ function normalizeCard(card) {
   const setId = String(card.set || "").toUpperCase();
   const number = String(card.number ?? "");
   const id = `${setId}-${number}`;
+  
+  // パック名の抽出を拡張
+  let primaryPack = "その他";
+  if (Array.isArray(card.packs) && card.packs.length > 0) {
+    primaryPack = card.packs[0];
+  } else if (card.pack) {
+    primaryPack = card.pack;
+  }
 
   return {
     ...card,
@@ -144,11 +141,10 @@ function normalizeCard(card) {
     set: setId,
     number,
     expansionId: setId,
-    pack: Array.isArray(card.packs) && card.packs.length ? card.packs[0] : "その他",
-    displayName: jaName(card.name),
-    displayPack: Array.isArray(card.packs) && card.packs.length
-      ? jaPack(card.packs[0])
-      : "その他"
+    pack: primaryPack,
+    packsList: Array.isArray(card.packs) && card.packs.length > 0 ? card.packs : [primaryPack],
+    displayName: jaName(card.name || card.displayName),
+    displayPack: jaPack(primaryPack)
   };
 }
 
@@ -157,14 +153,13 @@ function isManagedCard(card) {
 }
 
 function cardsForExpansion(expansion) {
-  return cards.filter(c => c.expansionId === expansion.code);
+  return cards.filter(c => c.expansionId === expansion.id);
 }
 
 function cardsForPack(expansionId, packName) {
   return cards.filter(c =>
     c.expansionId === expansionId &&
-    Array.isArray(c.packs) &&
-    c.packs.includes(packName)
+    (c.packsList.includes(packName) || c.pack === packName)
   );
 }
 
@@ -290,23 +285,41 @@ async function loadData() {
     ]);
     if (!cardRes.ok || !setRes.ok) throw new Error("データ取得失敗");
 
-    const allCards = (await cardRes.json()).map(normalizeCard);
+    const rawCards = await cardRes.json();
     const setObject = await setRes.json();
-    const allSets = Object.values(setObject).flat();
 
-    cards = allCards.filter(isManagedCard);
+    cards = rawCards.map(normalizeCard).filter(isManagedCard);
 
-    expansions = allSets.map(exp => ({
-      ...exp,
-      id: String(exp.code).toUpperCase(),
-      name: exp.name?.ja || exp.name?.en || String(exp.code),
-      packs: Array.isArray(exp.packs)
-        ? exp.packs.map(name => ({ name }))
-        : []
-    }));
+    // sets.json の構造（オブジェクト型／配列型の両方に対応）
+    let allSets = [];
+    if (Array.isArray(setObject)) {
+      allSets = setObject;
+    } else if (typeof setObject === "object" && setObject !== null) {
+      allSets = Object.values(setObject).flat();
+    }
+
+    expansions = allSets.map(exp => {
+      const code = String(exp.code || exp.id || "").toUpperCase();
+      return {
+        ...exp,
+        id: code,
+        name: exp.name?.ja || exp.name?.en || exp.name || code,
+      };
+    });
+
+    // 取得したカードに存在するが sets に定義されていないセットをフォールバック生成
+    const cardSetIds = [...new Set(cards.map(c => c.expansionId))];
+    cardSetIds.forEach(setId => {
+      if (!expansions.some(e => e.id === setId)) {
+        expansions.push({
+          id: setId,
+          name: expansionJa[setId.toLowerCase()] || setId
+        });
+      }
+    });
 
     $("data-status").textContent =
-      `管理対象 ${cards.length.toLocaleString()}枚 / 全カード ${allCards.length.toLocaleString()}枚。◆1〜◆4のみ表示`;
+      `管理対象 ${cards.length.toLocaleString()}枚 / 全カード ${rawCards.length.toLocaleString()}枚。◆1〜◆4のみ表示`;
 
     renderAccounts();
     updateSelectedAccountName();
@@ -329,7 +342,8 @@ function renderHome() {
     const expCards = cardsForExpansion(exp);
     if (!expCards.length) return;
 
-    const packNames = [...new Set(expCards.map(c => c.pack || "その他"))];
+    // このエキスパンション内に含まれる全パック名を取得
+    const packNames = [...new Set(expCards.flatMap(c => c.packsList))];
     const visiblePacks = packNames.filter(name => {
       const text = `${jaExpansion(exp.name, exp.id)} ${jaPack(name)} ${name}`.toLowerCase();
       return !q || text.includes(q);
@@ -343,7 +357,7 @@ function renderHome() {
     const header = document.createElement("div");
     header.className = "expansion-header";
     header.innerHTML = `
-      <span>${escapeHtml(jaExpansion(exp.name, exp.id))} <small>(${escapeHtml(exp.id.toUpperCase())})</small></span>
+      <span>${escapeHtml(jaExpansion(exp.name, exp.id))} <small>(${escapeHtml(exp.id)})</small></span>
       <span class="expansion-progress">${info.owned} / ${info.total} (${info.percent}%)</span>
     `;
     section.appendChild(header);
@@ -374,7 +388,7 @@ function renderHome() {
 }
 
 function openPack(expansionId, packName) {
-  selectedExpansion = expansions.find(e => e.id === expansionId);
+  selectedExpansion = expansions.find(e => e.id === expansionId) || { id: expansionId, name: expansionId };
   selectedPack = packName;
   filter = "all";
   rarityFilter = "all";
